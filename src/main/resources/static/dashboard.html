@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard API - Conductores y Rutas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            gap: 10px;
+        }
+
+        .tab-button {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .tab-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .tab-button.active {
+            background: white;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .tab-content {
+            display: none;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .refresh-btn {
+            padding: 10px 20px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: transform 0.2s;
+        }
+
+        .refresh-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #667eea;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .card-field {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding: 5px 0;
+        }
+
+        .field-label {
+            font-weight: bold;
+            color: #666;
+        }
+
+        .field-value {
+            color: #333;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #667eea;
+            color: white;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #e74c3c;
+            background: #ffeaea;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Estilos para formularios */
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .btn-primary {
+            padding: 12px 24px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            padding: 12px 24px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+        }
+
+        .mensaje-resultado {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .mensaje-resultado.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .mensaje-resultado.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🚗 Dashboard API</h1>
+        <p>Gestión de Conductores y Rutas</p>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-button active" onclick="showTab('usuarios')">Usuarios</button>
+        <button class="tab-button" onclick="showTab('conductores')">Conductores</button>
+        <button class="tab-button" onclick="showTab('rutas')">Rutas</button>
+        <button class="tab-button" onclick="showTab('agregar-conductor')">+ Conductor</button>
+        <button class="tab-button" onclick="showTab('agregar-ruta')">+ Ruta</button>
+    </div>
+
+    <div id="usuarios" class="tab-content active">
+        <div class="section-header">
+            <h2 class="section-title">👥 Usuarios</h2>
+            <button class="refresh-btn" onclick="loadUsuarios()">🔄 Actualizar</button>
+        </div>
+        <div id="usuarios-content">
+            <div class="loading">
+                <div class="spinner"></div>
+                Cargando usuarios...
+            </div>
+        </div>
+    </div>
+
+    <div id="conductores" class="tab-content">
+        <div class="section-header">
+            <h2 class="section-title">🚗 Conductores</h2>
+            <button class="refresh-btn" onclick="loadConductores()">🔄 Actualizar</button>
+        </div>
+        <div id="conductores-content">
+            <div class="loading">
+                <div class="spinner"></div>
+                Cargando conductores...
+            </div>
+        </div>
+    </div>
+
+    <div id="rutas" class="tab-content">
+        <div class="section-header">
+            <h2 class="section-title">Rutas</h2>
+            <button class="refresh-btn" onclick="loadRutas()">Actualizar</button>
+        </div>
+        <div id="rutas-content">
+            <div class="loading">
+                <div class="spinner"></div>
+                Cargando rutas...
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab para agregar conductor -->
+    <div id="agregar-conductor" class="tab-content">
+        <div class="section-header">
+            <h2 class="section-title">Agregar Conductor</h2>
+        </div>
+        <div class="form-container">
+            <form id="form-conductor" onsubmit="crearConductor(event)">
+                <div class="form-group">
+                    <label for="conductor-nombre">Nombre Completo:</label>
+                    <input type="text" id="conductor-nombre" name="nombreCompleto" required>
+                </div>
+                <div class="form-group">
+                    <label for="conductor-licencia">Licencia:</label>
+                    <input type="text" id="conductor-licencia" name="licencia" required>
+                </div>
+                <div class="form-group">
+                    <label for="conductor-telefono">Teléfono:</label>
+                    <input type="tel" id="conductor-telefono" name="telefono" required>
+                </div>
+                <div class="form-group">
+                    <label for="conductor-correo">Correo Electrónico:</label>
+                    <input type="email" id="conductor-correo" name="correo" required>
+                </div>
+                <div class="form-group">
+                    <label for="conductor-password">Contraseña:</label>
+                    <input type="password" id="conductor-password" name="password" required>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Crear Conductor</button>
+                    <button type="button" class="btn-secondary" onclick="limpiarFormConductor()">Limpiar</button>
+                </div>
+            </form>
+            <div id="mensaje-conductor" class="mensaje-resultado"></div>
+        </div>
+    </div>
+
+    <!-- Tab para agregar ruta -->
+    <div id="agregar-ruta" class="tab-content">
+        <div class="section-header">
+            <h2 class="section-title">Agregar Ruta</h2>
+        </div>
+        <div class="form-container">
+            <form id="form-ruta" onsubmit="crearRuta(event)">
+                <div class="form-group">
+                    <label for="ruta-nombre">Nombre de la Ruta:</label>
+                    <input type="text" id="ruta-nombre" name="nombre" required>
+                </div>
+                <div class="form-group">
+                    <label for="ruta-origen">Origen:</label>
+                    <input type="text" id="ruta-origen" name="origen" required>
+                </div>
+                <div class="form-group">
+                    <label for="ruta-destino">Destino:</label>
+                    <input type="text" id="ruta-destino" name="destino" required>
+                </div>
+                <div class="form-group">
+                    <label for="ruta-duracion">Duración (minutos):</label>
+                    <input type="number" id="ruta-duracion" name="duracionEnMinutos" min="1" required>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Crear Ruta</button>
+                    <button type="button" class="btn-secondary" onclick="limpiarFormRuta()">Limpiar</button>
+                </div>
+            </form>
+            <div id="mensaje-ruta" class="mensaje-resultado"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_BASE = 'http://localhost:8080';
+
+    // Función para cambiar tabs
+    function showTab(tabName) {
+        // Ocultar todos los tabs
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.remove('active');
+        });
+
+        // Remover clase active de todos los botones
+        document.querySelectorAll('.tab-button').forEach(btn => {
+            btn.classList.remove('active');
+        });
+
+        // Mostrar tab seleccionado
+        document.getElementById(tabName).classList.add('active');
+        event.target.classList.add('active');
+
+        // Cargar datos si no se han cargado
+        if (tabName === 'usuarios') loadUsuarios();
+        else if (tabName === 'conductores') loadConductores();
+        else if (tabName === 'rutas') loadRutas();
+        else if (tabName === 'agregar-conductor') limpiarFormConductor();
+        else if (tabName === 'agregar-ruta') limpiarFormRuta();
+    }
+
+    // Función para hacer peticiones HTTP
+    async function fetchData(endpoint, options = {}) {
+        try {
+            const response = await fetch(`${API_BASE}${endpoint}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                },
+                ...options
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP ${response.status}: ${errorText}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            throw error;
+        }
+    }
+
+    // Cargar usuarios
+    async function loadUsuarios() {
+        const content = document.getElementById('usuarios-content');
+        content.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Cargando usuarios...
+                </div>
+            `;
+
+        try {
+            const usuarios = await fetchData('/usuarios');
+
+            if (usuarios.length === 0) {
+                content.innerHTML = `
+                        <div class="empty">
+                            <h3>📭 No hay usuarios</h3>
+                            <p>No se encontraron usuarios en la base de datos</p>
+                        </div>
+                    `;
+                return;
+            }
+
+            const cardsHtml = usuarios.map(usuario => `
+                    <div class="card">
+                        <h3>👤 Usuario #${usuario.id}</h3>
+                        <div class="card-field">
+                            <span class="field-label">📧 Correo:</span>
+                            <span class="field-value">${usuario.correo}</span>
+                        </div>
+                        <div class="card-field">
+                            <span class="field-label">🏷️ Rol:</span>
+                            <span class="badge">${usuario.rol}</span>
+                        </div>
+                    </div>
+                `).join('');
+
+            content.innerHTML = `<div class="cards-grid">${cardsHtml}</div>`;
+
+        } catch (error) {
+            content.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Error al cargar usuarios</h3>
+                        <p>No se pudo conectar con la API: ${error.message}</p>
+                        <p><strong>Asegúrate de que tu aplicación Spring Boot esté corriendo en http://localhost:8080</strong></p>
+                    </div>
+                `;
+        }
+    }
+
+    // Cargar conductores
+    async function loadConductores() {
+        const content = document.getElementById('conductores-content');
+        content.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Cargando conductores...
+                </div>
+            `;
+
+        try {
+            const conductores = await fetchData('/conductores');
+
+            if (conductores.length === 0) {
+                content.innerHTML = `
+                        <div class="empty">
+                            <h3>🚗 No hay conductores</h3>
+                            <p>No se encontraron conductores registrados</p>
+                        </div>
+                    `;
+                return;
+            }
+
+            const cardsHtml = conductores.map(conductor => `
+                    <div class="card">
+                        <h3>🚗 ${conductor.nombreCompleto}</h3>
+                        <div class="card-field">
+                            <span class="field-label">🆔 ID:</span>
+                            <span class="field-value">#${conductor.id}</span>
+                        </div>
+                        <div class="card-field">
+                            <span class="field-label">📄 Licencia:</span>
+                            <span class="field-value">${conductor.licencia}</span>
+                        </div>
+                        <div class="card-field">
+                            <span class="field-label">📱 Teléfono:</span>
+                            <span class="field-value">${conductor.telefono}</span>
+                        </div>
+                        ${conductor.usuario ? `
+                        <div class="card-field">
+                            <span class="field-label">👤 Usuario:</span>
+                            <span class="field-value">${conductor.usuario.correo}</span>
+                        </div>
+                        ` : ''}
+                    </div>
+                `).join('');
+
+            content.innerHTML = `<div class="cards-grid">${cardsHtml}</div>`;
+
+        } catch (error) {
+            content.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Error al cargar conductores</h3>
+                        <p>No se pudo conectar con la API: ${error.message}</p>
+                        <p><strong>Asegúrate de que tu aplicación Spring Boot esté corriendo en http://localhost:8080</strong></p>
+                    </div>
+                `;
+        }
+    }
+
+    // Cargar rutas
+    async function loadRutas() {
+        const content = document.getElementById('rutas-content');
+        content.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Cargando rutas...
+                </div>
+            `;
+
+        try {
+            const rutas = await fetchData('/rutas');
+
+            if (rutas.length === 0) {
+                content.innerHTML = `
+                        <div class="empty">
+                            <h3>🛣️ No hay rutas</h3>
+                            <p>No se encontraron rutas registradas</p>
+                        </div>
+                    `;
+                return;
+            }
+
+            const cardsHtml = rutas.map(ruta => `
+                    <div class="card">
+                        <h3>🛣️ ${ruta.nombre}</h3>
+                        <div class="card-field">
+                            <span class="field-label">🆔 ID:</span>
+                            <span class="field-value">#${ruta.id}</span>
+                        </div>
+                        <div class="card-field">
+                            <span class="field-label">🏁 Origen:</span>
+                            <span class="field-value">${ruta.origen}</span>
+                        </div>
+                        <div class="card-field">
+                            <span class="field-label">🎯 Destino:</span>
+                            <span class="field-value">${ruta.destino}</span>
+                        </div>
+                        <div class="card-field">
+                            <span class="field-label">⏱️ Duración:</span>
+                            <span class="badge">${ruta.duracionEnMinutos} min</span>
+                        </div>
+                    </div>
+                `).join('');
+
+            content.innerHTML = `<div class="cards-grid">${cardsHtml}</div>`;
+
+        } catch (error) {
+            content.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Error al cargar rutas</h3>
+                        <p>No se pudo conectar con la API: ${error.message}</p>
+                        <p><strong>Asegúrate de que tu aplicación Spring Boot esté corriendo en http://localhost:8080</strong></p>
+                    </div>
+                `;
+        }
+    }
+
+    // Cargar usuarios al inicio
+    document.addEventListener('DOMContentLoaded', () => {
+        loadUsuarios();
+    });
+
+    // Funciones para formularios
+    async function crearConductor(event) {
+        event.preventDefault();
+
+        const formData = new FormData(event.target);
+        const mensajeElement = document.getElementById('mensaje-conductor');
+        const submitButton = event.target.querySelector('button[type="submit"]');
+
+        // Deshabilitar botón mientras se procesa
+        submitButton.disabled = true;
+        submitButton.textContent = 'Creando...';
+        mensajeElement.className = 'mensaje-resultado';
+        mensajeElement.textContent = '';
+
+        try {
+            // Primero crear el usuario
+            const usuarioData = {
+                correo: formData.get('correo'),
+                password: formData.get('password'),
+                rol: 'CONDUCTOR'
+            };
+
+            const usuario = await fetchData('/usuarios', {
+                method: 'POST',
+                body: JSON.stringify(usuarioData)
+            });
+
+            // Luego crear el conductor
+            const conductorData = {
+                nombreCompleto: formData.get('nombreCompleto'),
+                licencia: formData.get('licencia'),
+                telefono: formData.get('telefono'),
+                usuario: { id: usuario.id }
+            };
+
+            const conductor = await fetchData('/conductores', {
+                method: 'POST',
+                body: JSON.stringify(conductorData)
+            });
+
+            mensajeElement.className = 'mensaje-resultado success';
+            mensajeElement.innerHTML = `
+                    ✅ <strong>Conductor creado exitosamente!</strong><br>
+                    ID: #${conductor.id} - ${conductor.nombreCompleto}
+                `;
+
+            // Limpiar formulario
+            event.target.reset();
+
+            // Actualizar lista de conductores si están visibles
+            if (document.getElementById('conductores').classList.contains('active')) {
+                loadConductores();
+            }
+
+        } catch (error) {
+            mensajeElement.className = 'mensaje-resultado error';
+            mensajeElement.innerHTML = `
+                    ❌ <strong>Error al crear conductor:</strong><br>
+                    ${error.message}
+                `;
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = 'Crear Conductor';
+        }
+    }
+
+    async function crearRuta(event) {
+        event.preventDefault();
+
+        const formData = new FormData(event.target);
+        const mensajeElement = document.getElementById('mensaje-ruta');
+        const submitButton = event.target.querySelector('button[type="submit"]');
+
+        // Deshabilitar botón mientras se procesa
+        submitButton.disabled = true;
+        submitButton.textContent = 'Creando...';
+        mensajeElement.className = 'mensaje-resultado';
+        mensajeElement.textContent = '';
+
+        try {
+            const rutaData = {
+                nombre: formData.get('nombre'),
+                origen: formData.get('origen'),
+                destino: formData.get('destino'),
+                duracionEnMinutos: parseInt(formData.get('duracionEnMinutos'))
+            };
+
+            const ruta = await fetchData('/rutas', {
+                method: 'POST',
+                body: JSON.stringify(rutaData)
+            });
+
+            mensajeElement.className = 'mensaje-resultado success';
+            mensajeElement.innerHTML = `
+                    ✅ <strong>Ruta creada exitosamente!</strong><br>
+                    ID: #${ruta.id} - ${ruta.nombre} (${ruta.origen} → ${ruta.destino})
+                `;
+
+            // Limpiar formulario
+            event.target.reset();
+
+            // Actualizar lista de rutas si están visibles
+            if (document.getElementById('rutas').classList.contains('active')) {
+                loadRutas();
+            }
+
+        } catch (error) {
+            mensajeElement.className = 'mensaje-resultado error';
+            mensajeElement.innerHTML = `
+                    ❌ <strong>Error al crear ruta:</strong><br>
+                    ${error.message}
+                `;
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = 'Crear Ruta';
+        }
+    }
+
+    function limpiarFormConductor() {
+        document.getElementById('form-conductor').reset();
+        document.getElementById('mensaje-conductor').className = 'mensaje-resultado';
+        document.getElementById('mensaje-conductor').textContent = '';
+    }
+
+    function limpiarFormRuta() {
+        document.getElementById('form-ruta').reset();
+        document.getElementById('mensaje-ruta').className = 'mensaje-resultado';
+        document.getElementById('mensaje-ruta').textContent = '';
+    }
+</script>
+</body>
+</html>
