@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>FleetGuard360 - Dashboard Admin (con CRUD)</title>
+    <style>
+        /* --- estilos (idénticos a la parte 1 + ligeras clases nuevas) --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+            min-height: 100vh; padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header {
+            background: rgba(255,255,255,.95); padding: 20px 30px; border-radius: 15px; margin-bottom: 20px;
+            display:flex; justify-content:space-between; align-items:center; box-shadow:0 5px 15px rgba(0,0,0,.1);
+        }
+        .header h1 { color:#667eea; font-size:1.8rem; }
+        .user-info { display:flex; align-items:center; gap:15px; }
+        .badge { background:linear-gradient(45deg,#667eea,#764ba2); color:white; padding:8px 15px; border-radius:20px; font-size:.9rem; font-weight:bold; }
+        .logout-btn { padding:10px 20px; background:#dc3545; color:white; border:none; border-radius:8px; cursor:pointer; transition:all .3s; }
+        .logout-btn:hover { background:#c82333; }
+
+        .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:20px; margin-bottom:30px; }
+        .stat-card { background:white; padding:25px; border-radius:15px; box-shadow:0 5px 15px rgba(0,0,0,.1); text-align:center; }
+        .stat-value { font-size:2.5rem; font-weight:bold; color:#667eea; margin:10px 0; }
+        .stat-label { color:#666; font-size:.9rem; }
+
+        .tabs { display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
+        .tab-button {
+            padding:12px 24px; background:rgba(255,255,255,.2); color:white; border:none; border-radius:25px;
+            cursor:pointer; font-size:1rem; transition:all .3s; backdrop-filter: blur(10px);
+        }
+        .tab-button:hover { background:rgba(255,255,255,.3); }
+        .tab-button.active { background:white; color:#667eea; font-weight:bold; }
+
+        .content-box { background:white; border-radius:15px; padding:30px; box-shadow:0 5px 15px rgba(0,0,0,.1); display:none; }
+        .content-box.active { display:block; animation:fadeIn .3s; }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+
+        .section-title { font-size:1.5rem; color:#333; margin-bottom:20px; padding-bottom:10px; border-bottom:2px solid #f0f0f0; }
+        .form-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:15px; margin-bottom:20px; }
+        .form-group { margin-bottom:15px; }
+        .form-group label { display:block; margin-bottom:5px; font-weight:600; color:#333; }
+        .form-group input, .form-group select { width:100%; padding:10px; border:2px solid #e0e0e0; border-radius:8px; font-size:1rem; }
+        .form-group input:focus, .form-group select:focus { outline:none; border-color:#667eea; }
+
+        .btn { padding:12px 24px; border:none; border-radius:8px; cursor:pointer; font-size:1rem; transition:all .3s; }
+        .btn-primary { background:linear-gradient(45deg,#667eea,#764ba2); color:white; }
+        .btn-primary:hover { transform:translateY(-2px); box-shadow:0 5px 15px rgba(102,126,234,.3); }
+        .btn-secondary { background:#6c757d; color:white; }
+        .btn-danger { background:#dc3545; color:white; }
+        .btn-success { background:#28a745; color:white; }
+
+        .table-container { overflow-x:auto; margin-top:20px; }
+        table { width:100%; border-collapse:collapse; }
+        th, td { padding:12px; text-align:left; border-bottom:1px solid #e0e0e0; }
+        th { background:#f8f9fa; font-weight:600; color:#333; }
+        tr:hover { background:#f8f9fa; }
+
+        .status-badge { padding:4px 12px; border-radius:15px; font-size:.85rem; font-weight:bold; }
+        .status-activo { background:#d4edda; color:#155724; }
+        .status-programada { background:#d1ecf1; color:#0c5460; }
+        .status-en-curso { background:#fff3cd; color:#856404; }
+        .status-finalizada { background:#e2e3e5; color:#383d41; }
+
+        .message { padding:15px; border-radius:8px; margin-bottom:20px; }
+        .message.success { background:#d4edda; color:#155724; border:1px solid #c3e6cb; }
+        .message.error { background:#f8d7da; color:#721c24; border:1px solid #f5c6cb; }
+
+        .loading { text-align:center; padding:40px; color:#666; }
+        .spinner {
+            border:3px solid #f3f3f3; border-top:3px solid #667eea; border-radius:50%;
+            width:40px; height:40px; animation:spin 1s linear infinite; margin:0 auto 15px;
+        }
+        @keyframes spin { 0%{transform:rotate(0deg);} 100%{transform:rotate(360deg);} }
+
+        .small-actions { display:flex; gap:8px; align-items:center; }
+        .inline-form { margin-top:15px; background:#f8f9fa; padding:15px; border-radius:8px; }
+        .muted { color:#666; font-size:.9rem; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <div>
+            <h1>🚌 FleetGuard360 - Admin</h1>
+            <small id="userEmail" style="color:#666;"></small>
+        </div>
+        <div class="user-info">
+            <span class="badge" id="rolBadge">ADMIN</span>
+            <button class="logout-btn" onclick="cerrarSesion()">🚪 Salir</button>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">📍 Rutas Activas</div>
+            <div class="stat-value" id="statRutas">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">🚗 Conductores</div>
+            <div class="stat-value" id="statConductores">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">⏰ Turnos Programados</div>
+            <div class="stat-value" id="statTurnos">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">✅ Asignaciones Activas</div>
+            <div class="stat-value" id="statAsignaciones">0</div>
+        </div>
+    </div>
+
+    <!-- Tabs (modificados para pasar event) -->
+    <div class="tabs">
+        <button class="tab-button active" onclick="showTab('gestion-turnos', event)">📅 Gestión de Turnos</button>
+        <button class="tab-button" onclick="showTab('asignaciones', event)">👥 Asignaciones</button>
+        <button class="tab-button" onclick="showTab('monitoreo', event)">📊 Monitoreo</button>
+        <button class="tab-button" onclick="showTab('conductores', event)">🚗 Conductores</button>
+        <button class="tab-button" onclick="showTab('rutas', event)">📍 Rutas</button>
+    </div>
+
+    <!-- Gestión de Turnos -->
+    <div id="gestion-turnos" class="content-box active">
+        <h2 class="section-title">📅 Gestión de Turnos por Ruta</h2>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Seleccionar Ruta:</label>
+                <select id="select-ruta-turnos" onchange="cargarTurnosPorRuta()">
+                    <option value="">Seleccione una ruta...</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="turnos-content">
+            <p style="text-align:center; color:#999;">Seleccione una ruta para ver sus turnos</p>
+        </div>
+    </div>
+
+    <!-- Asignaciones -->
+    <div id="asignaciones" class="content-box">
+        <h2 class="section-title">👥 Asignaciones de Conductores</h2>
+
+        <button class="btn btn-primary" onclick="mostrarFormAsignacion()">+ Nueva Asignación</button>
+
+        <div id="form-asignacion" style="display:none; margin-top:20px; background:#f8f9fa; padding:20px; border-radius:8px;">
+            <h3>Asignar Conductor a Turno</h3>
+            <form onsubmit="crearAsignacion(event)">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Turno:</label>
+                        <select id="asig-turno" required>
+                            <option value="">Cargando...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Conductor:</label>
+                        <select id="asig-conductor" required>
+                            <option value="">Cargando...</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Fecha Inicio:</label>
+                        <input type="date" id="asig-fecha-inicio" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha Fin (opcional):</label>
+                        <input type="date" id="asig-fecha-fin">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Guardar Asignación</button>
+                <button type="button" class="btn btn-secondary" onclick="ocultarFormAsignacion()">Cancelar</button>
+            </form>
+        </div>
+
+        <div id="asignaciones-content" class="table-container">
+            <div class="loading">
+                <div class="spinner"></div>
+                Cargando asignaciones...
+            </div>
+        </div>
+    </div>
+
+    <!-- Monitoreo -->
+    <div id="monitoreo" class="content-box">
+        <h2 class="section-title">📊 Monitoreo en Tiempo Real</h2>
+        <div id="monitoreo-content">
+            <div class="loading">
+                <div class="spinner"></div>
+                Cargando datos...
+            </div>
+        </div>
+    </div>
+
+    <!-- Conductores (CRUD INTEGRADO) -->
+    <div id="conductores" class="content-box">
+        <h2 class="section-title">🚗 Gestión de Conductores</h2>
+
+        <div class="small-actions" style="margin-bottom:12px;">
+            <button class="btn btn-primary" onclick="mostrarFormConductor(true)">+ Nuevo Conductor</button>
+            <span class="muted">Puedes crear, editar o eliminar conductores.</span>
+        </div>
+
+        <!-- Formulario Crear / Editar conductor (oculto por defecto) -->
+        <div id="form-conductor-panel" class="inline-form" style="display:none;">
+            <h3 id="form-conductor-title">Crear Conductor</h3>
+            <form id="form-conductor" onsubmit="handleSubmitConductor(event)">
+                <input type="hidden" id="conductor-id" />
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="conductor-nombre">Nombre Completo:</label>
+                        <input type="text" id="conductor-nombre" name="nombreCompleto" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="conductor-licencia">Licencia:</label>
+                        <input type="text" id="conductor-licencia" name="licencia" required />
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="conductor-telefono">Teléfono:</label>
+                        <input type="tel" id="conductor-telefono" name="telefono" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="conductor-correo">Correo Electrónico (usuario):</label>
+                        <input type="email" id="conductor-correo" name="correo" required />
+                    </div>
+                </div>
+                <!-- contraseña solo al crear -->
+                <div class="form-row" id="conductor-password-row">
+                    <div class="form-group">
+                        <label for="conductor-password">Contraseña:</label>
+                        <input type="password" id="conductor-password" name="password" />
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:12px; margin-top:12px;">
+                    <button type="submit" class="btn btn-primary" id="conductor-submit-btn">Crear Conductor</button>
+                    <button type="button" class="btn btn-secondary" onclick="ocultarFormConductor()">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="conductor-delete-btn" style="display:none;" onclick="eliminarConductorConfirm()">Eliminar</button>
+                </div>
+                <div id="mensaje-conductor" class="message" style="display:none;"></div>
+            </form>
+        </div>
+
+        <div id="conductores-content" class="table-container">
+            <div class="loading"><div class="spinner"></div>Cargando conductores...</div>
+        </div>
+    </div>
+
+    <!-- Rutas (CRUD INTEGRADO) -->
+    <div id="rutas" class="content-box">
+        <h2 class="section-title">📍 Gestión de Rutas</h2>
+
+        <div class="small-actions" style="margin-bottom:12px;">
+            <button class="btn btn-primary" onclick="mostrarFormRuta(true)">+ Nueva Ruta</button>
+            <span class="muted">Crear, editar o eliminar rutas.</span>
+        </div>
+
+        <!-- Formulario Crear / Editar ruta -->
+        <div id="form-ruta-panel" class="inline-form" style="display:none;">
+            <h3 id="form-ruta-title">Crear Ruta</h3>
+            <form id="form-ruta" onsubmit="handleSubmitRuta(event)">
+                <input type="hidden" id="ruta-id" />
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="ruta-nombre">Nombre de la Ruta:</label>
+                        <input type="text" id="ruta-nombre" name="nombre" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="ruta-origen">Origen:</label>
+                        <input type="text" id="ruta-origen" name="origen" required />
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="ruta-destino">Destino:</label>
+                        <input type="text" id="ruta-destino" name="destino" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="ruta-duracion">Duración (minutos):</label>
+                        <input type="number" id="ruta-duracion" name="duracionEnMinutos" min="1" required />
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:12px; margin-top:12px;">
+                    <button type="submit" class="btn btn-primary" id="ruta-submit-btn">Crear Ruta</button>
+                    <button type="button" class="btn btn-secondary" onclick="ocultarFormRuta()">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="ruta-delete-btn" style="display:none;" onclick="eliminarRutaConfirm()">Eliminar</button>
+                </div>
+                <div id="mensaje-ruta" class="message" style="display:none;"></div>
+            </form>
+        </div>
+
+        <div id="rutas-content" class="table-container">
+            <div class="loading"><div class="spinner"></div>Cargando rutas...</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    /* --- Configuración base --- */
+    const API_BASE = 'http://localhost:8080/api';
+    let authToken = '';
+    let userEmail = '';
+    let userRole = '';
+
+    // ---------- Verificar autenticación ----------
+    window.addEventListener('DOMContentLoaded', () => {
+        authToken = localStorage.getItem('token');
+        userRole = localStorage.getItem('rol');
+        userEmail = localStorage.getItem('correo');
+
+        if (!authToken || userRole !== 'ADMIN') {
+            alert('Acceso denegado. Solo administradores.');
+            window.location.href = '/';
+            return;
+        }
+
+        document.getElementById('userEmail').textContent = userEmail;
+        cargarEstadisticas();
+        cargarRutasParaSelect();
+        cargarConductores(); // precarga conductores
+        cargarRutas(); // precarga rutas
+    });
+
+    function cerrarSesion() {
+        if (confirm('¿Cerrar sesión?')) {
+            localStorage.clear();
+            window.location.href = '/';
+        }
+    }
+
+    // ---------- Helper fetchAPI (inyecta token) ----------
+    async function fetchAPI(endpoint, options = {}) {
+        const response = await fetch(`${API_BASE}${endpoint}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`,
+                ...options.headers
+            },
+            ...options
+        });
+
+        if (response.status === 401) {
+            alert('Sesión expirada');
+            localStorage.clear();
+            window.location.href = '/';
+            return;
+        }
+
+        if (!response.ok) {
+            const text = await response.text().catch(()=>null);
+            throw new Error(text || `HTTP ${response.status}`);
+        }
+
+        // Intentar parsear JSON (algunas respuestas DELETE pueden venir vacío)
+        const txt = await response.text();
+        try { return txt ? JSON.parse(txt) : null; }
+        catch { return txt; }
+    }
+
+    // ---------- Estadísticas ----------
+    async function cargarEstadisticas() {
+        try {
+            const [rutas, conductores, turnos, asignaciones] = await Promise.all([
+                fetchAPI('/rutas'),
+                fetchAPI('/conductores'),
+                fetchAPI('/turnos'),
+                fetchAPI('/asignaciones/activas')
+            ]);
+
+            document.getElementById('statRutas').textContent = rutas ? rutas.length : 0;
+            document.getElementById('statConductores').textContent = conductores ? conductores.length : 0;
+            document.getElementById('statTurnos').textContent = turnos ? turnos.length : 0;
+            document.getElementById('statAsignaciones').textContent = asignaciones ? asignaciones.length : 0;
+        } catch (error) {
+            console.error('Error cargando estadísticas:', error);
+        }
+    }
+
+    // ---------- Turnos & Asignaciones (mantengo tu lógica) ----------
+    async function cargarRutasParaSelect() {
+        try {
+            const rutas = await fetchAPI('/rutas') || [];
+            const select = document.getElementById('select-ruta-turnos');
+            select.innerHTML = '<option value="">Seleccione una ruta...</option>';
+            rutas.forEach(ruta => {
+                const option = document.createElement('option');
+                option.value = ruta.id;
+                option.textContent = `${ruta.nombre} (${ruta.origen} → ${ruta.destino})`;
+                select.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error cargando rutas:', error);
+        }
+    }
+
+    async function cargarTurnosPorRuta() {
+        const rutaId = document.getElementById('select-ruta-turnos').value;
+        const content = document.getElementById('turnos-content');
+        if (!rutaId) {
+            content.innerHTML = '<p style="text-align:center;color:#999;">Seleccione una ruta para ver sus turnos</p>';
+            return;
+        }
+        content.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando turnos...</div>';
+        try {
+            const turnos = await fetchAPI(`/turnos/ruta/${rutaId}`) || [];
+            if (turnos.length === 0) {
+                content.innerHTML = `
+                    <p style="text-align:center;color:#999;">No hay turnos configurados para esta ruta</p>
+                    <button class="btn btn-primary" onclick="crearTurnoAutomatico(${rutaId})">Crear Turnos Automáticamente</button>
+                `;
+                return;
+            }
+            const dias = ['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY'];
+            const nombresDias = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+            let html = '<div class="table-container"><table><thead><tr><th>Día</th><th>Hora Inicio</th><th>Hora Fin</th><th>Duración</th><th>Semana</th><th>Conductor</th><th>Estado</th></tr></thead><tbody>';
+            turnos.forEach(turno => {
+                const diaIndex = dias.indexOf(turno.diaSemana);
+                const nombreDia = nombresDias[diaIndex] || turno.diaSemana;
+                const statusClass = turno.tieneAsignacion ? 'status-activo' : 'status-programada';
+                const conductor = turno.conductorAsignado || 'Sin asignar';
+                html += `
+                    <tr>
+                        <td><strong>${nombreDia}</strong></td>
+                        <td>${turno.horaInicio}</td>
+                        <td>${turno.horaFin}</td>
+                        <td>${turno.duracionHoras}h</td>
+                        <td>Semana ${turno.numeroSemana}</td>
+                        <td>${conductor}</td>
+                        <td><span class="${statusClass}">${turno.tieneAsignacion ? 'Asignado' : 'Disponible'}</span></td>
+                    </tr>
+                `;
+            });
+            html += '</tbody></table></div>';
+            content.innerHTML = html;
+        } catch (error) {
+            content.innerHTML = '<div class="message error">Error al cargar turnos</div>';
+            console.error(error);
+        }
+    }
+
+    // ---------- Navegación de pestañas ----------
+    function showTab(tabName, ev) {
+        document.querySelectorAll('.content-box').forEach(box => box.classList.remove('active'));
+        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(tabName).classList.add('active');
+        if (ev && ev.target) ev.target.classList.add('active');
+
+        if (tabName === 'asignaciones') cargarAsignaciones();
+        else if (tabName === 'monitoreo') cargarMonitoreo();
+        else if (tabName === 'conductores') cargarConductores();
+        else if (tabName === 'rutas') cargarRutas();
+    }
+
+    // ---------- Asignaciones & Monitoreo (mantenido) ----------
+    async function cargarAsignaciones() {
+        const content = document.getElementById('asignaciones-content');
+        content.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando...</div>';
+        try {
+            const asignaciones = await fetchAPI('/asignaciones') || [];
+            if (asignaciones.length === 0) {
+                content.innerHTML = '<p style="text-align:center;color:#999;">No hay asignaciones registradas</p>';
+                return;
+            }
+            let html = '<table><thead><tr><th>Conductor</th><th>Ruta</th><th>Día</th><th>Horario</th><th>Fecha Inicio</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>';
+            asignaciones.forEach(asig => {
+                const statusClass = `status-${asig.estado.toLowerCase().replace('_','-')}`;
+                html += `
+                    <tr>
+                        <td>${asig.conductorNombre}</td>
+                        <td>${asig.rutaNombre}</td>
+                        <td>${asig.diaSemanaNombre}</td>
+                        <td>${asig.horarioTurno}</td>
+                        <td>${asig.fechaInicio}</td>
+                        <td><span class="${statusClass}">${asig.estado}</span></td>
+                        <td>
+                            ${asig.estado === 'PROGRAMADA' ? `<button class="btn btn-success" onclick="iniciarTurno(${asig.id})">▶️ Iniciar</button>` : ''}
+                            ${asig.estado === 'EN_CURSO' ? `<button class="btn btn-danger" onclick="finalizarTurno(${asig.id})">⏹️ Finalizar</button>` : ''}
+                            ${asig.estado !== 'FINALIZADA' ? `<button class="btn btn-danger" onclick="cancelarAsignacion(${asig.id})">❌</button>` : ''}
+                        </td>
+                    </tr>
+                `;
+            });
+            html += '</tbody></table>';
+            content.innerHTML = html;
+        } catch (error) {
+            content.innerHTML = '<div class="message error">Error al cargar asignaciones</div>';
+            console.error(error);
+        }
+    }
+
+    async function cargarMonitoreo() {
+        const content = document.getElementById('monitoreo-content');
+        content.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando...</div>';
+        try {
+            const asignacionesActivas = await fetchAPI('/asignaciones/activas') || [];
+            if (asignacionesActivas.length === 0) {
+                content.innerHTML = '<div class="message">No hay turnos activos en este momento</div>';
+                return;
+            }
+            let html = '<h3>🔴 Turnos en Curso</h3>';
+            asignacionesActivas.forEach(asig => {
+                const horaInicio = new Date(asig.horaInicioReal);
+                const ahora = new Date();
+                const minutosTranscurridos = Math.floor((ahora - horaInicio) / 60000);
+                const horasTranscurridas = (minutosTranscurridos / 60).toFixed(1);
+                let alertClass = 'status-activo';
+                if (horasTranscurridas > 7.5) alertClass = 'status-en-curso';
+                if (horasTranscurridas > 8) alertClass = 'status-finalizada';
+                html += `
+                    <div class="turno-card occupied">
+                        <h4>${asig.conductorNombre} - ${asig.rutaNombre}</h4>
+                        <p><strong>Día:</strong> ${asig.diaSemanaNombre} | <strong>Horario:</strong> ${asig.horarioTurno}</p>
+                        <p><strong>Inicio real:</strong> ${new Date(asig.horaInicioReal).toLocaleString()}</p>
+                        <p class="${alertClass}"><strong>Tiempo transcurrido:</strong> ${horasTranscurridas} horas</p>
+                        <button class="btn btn-danger" onclick="finalizarTurno(${asig.id})">⏹️ Finalizar Turno</button>
+                    </div>
+                `;
+            });
+            content.innerHTML = html;
+        } catch (error) {
+            content.innerHTML = '<div class="message error">Error al cargar monitoreo</div>';
+            console.error(error);
+        }
+    }
+
+    // ---------- FUNCIONES CRUD para CONDUCTORES ----------
+    // Mostrar formulario (nuevo o edición)
+    function mostrarFormConductor(isNew = true, conductor = null) {
+        document.getElementById('form-conductor-panel').style.display = 'block';
+        const title = document.getElementById('form-conductor-title');
+        const submitBtn = document.getElementById('conductor-submit-btn');
+        const deleteBtn = document.getElementById('conductor-delete-btn');
+        const passwordRow = document.getElementById('conductor-password-row');
+        const mensaje = document.getElementById('mensaje-conductor');
+
+        mensaje.style.display = 'none';
+        mensaje.textContent = '';
+
+        if (isNew) {
+            title.textContent = 'Crear Conductor';
+            submitBtn.textContent = 'Crear Conductor';
+            deleteBtn.style.display = 'none';
+            passwordRow.style.display = 'block';
+            document.getElementById('conductor-id').value = '';
+            document.getElementById('conductor-nombre').value = '';
+            document.getElementById('conductor-licencia').value = '';
+            document.getElementById('conductor-telefono').value = '';
+            document.getElementById('conductor-correo').value = '';
+            document.getElementById('conductor-password').value = '';
+        } else {
+            title.textContent = 'Editar Conductor';
+            submitBtn.textContent = 'Guardar cambios';
+            deleteBtn.style.display = 'inline-block';
+            passwordRow.style.display = 'none'; // no pedir password al editar
+            // popular campos
+            document.getElementById('conductor-id').value = conductor.id;
+            document.getElementById('conductor-nombre').value = conductor.nombreCompleto || '';
+            document.getElementById('conductor-licencia').value = conductor.licencia || '';
+            document.getElementById('conductor-telefono').value = conductor.telefono || '';
+            document.getElementById('conductor-correo').value = conductor.usuario ? conductor.usuario.correo : '';
+        }
+        // scroll to form (en caso de long pages)
+        document.getElementById('form-conductor-panel').scrollIntoView({behavior:'smooth'});
+    }
+
+    function ocultarFormConductor() {
+        document.getElementById('form-conductor-panel').style.display = 'none';
+    }
+
+    // Manejar submit (crear o editar)
+    async function handleSubmitConductor(event) {
+        event.preventDefault();
+        const id = document.getElementById('conductor-id').value;
+        const nombre = document.getElementById('conductor-nombre').value.trim();
+        const licencia = document.getElementById('conductor-licencia').value.trim();
+        const telefono = document.getElementById('conductor-telefono').value.trim();
+        const correo = document.getElementById('conductor-correo').value.trim();
+        const password = document.getElementById('conductor-password').value;
+
+        const mensaje = document.getElementById('mensaje-conductor');
+        mensaje.style.display = 'none'; mensaje.className = 'message'; mensaje.textContent = '';
+
+        try {
+            if (!id) {
+                // CREAR: primero crear usuario
+                if (!password) throw new Error('La contraseña es obligatoria para crear el usuario del conductor.');
+                const usuarioData = { correo, password, rol: 'CONDUCTOR' };
+                const createdUser = await fetchAPI('/usuarios', { method: 'POST', body: JSON.stringify(usuarioData) });
+                // luego crear conductor vinculado al usuario
+                const conductorData = { nombreCompleto: nombre, licencia, telefono, usuario: { id: createdUser.id } };
+                const created = await fetchAPI('/conductores', { method: 'POST', body: JSON.stringify(conductorData) });
+                mensaje.classList.add('success'); mensaje.textContent = `✅ Conductor creado: #${created.id} - ${created.nombreCompleto}`; mensaje.style.display = 'block';
+            } else {
+                // EDITAR conductor
+                const conductorData = { nombreCompleto: nombre, licencia, telefono };
+                await fetchAPI(`/conductores/${id}`, { method: 'PUT', body: JSON.stringify(conductorData) });
+                // Opcional: actualizar correo de usuario (si tu endpoint lo permite) -- aquí solo mostramos mensaje
+                mensaje.classList.add('success'); mensaje.textContent = `✅ Conductor actualizado (ID: ${id})`; mensaje.style.display = 'block';
+            }
+
+            // refrescar lista y estadísticas
+            cargarConductores();
+            cargarEstadisticas();
+            // si todo ok, limpiar form y ocultar (pequeña pausa)
+            setTimeout(()=>{ ocultarFormConductor(); }, 900);
+
+        } catch (error) {
+            mensaje.classList.add('error'); mensaje.textContent = `❌ ${error.message}`; mensaje.style.display = 'block';
+            console.error('Error en crear/editar conductor:', error);
+        }
+    }
+
+    // Confirmar eliminación (botón en form)
+    function eliminarConductorConfirm() {
+        const id = document.getElementById('conductor-id').value;
+        if (!id) return alert('No hay conductor seleccionado.');
+        if (!confirm('¿Eliminar este conductor? Esta acción es irreversible.')) return;
+        eliminarConductor(id);
+    }
+
+    // Borrar conductor
+    async function eliminarConductor(id) {
+        try {
+            await fetchAPI(`/conductores/${id}`, { method: 'DELETE' });
+            alert('Conductor eliminado');
+            ocultarFormConductor();
+            cargarConductores();
+            cargarEstadisticas();
+        } catch (error) {
+            alert('Error al eliminar conductor: ' + error.message);
+            console.error(error);
+        }
+    }
+
+    // Cargar lista de conductores (lista con acciones editar/borrar)
+    async function cargarConductores() {
+        const content = document.getElementById('conductores-content');
+        content.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando conductores...</div>';
+        try {
+            const conductores = await fetchAPI('/conductores') || [];
+            if (conductores.length === 0) {
+                content.innerHTML = '<div style="text-align:center;color:#999;">🚗 No hay conductores</div>';
+                return;
+            }
+
+            let html = '<div class="table-container"><table><thead><tr><th>ID</th><th>Nombre</th><th>Licencia</th><th>Teléfono</th><th>Usuario</th><th>Acciones</th></tr></thead><tbody>';
+            conductores.forEach(conductor => {
+                html += `
+                    <tr>
+                        <td>#${conductor.id}</td>
+                        <td>${conductor.nombreCompleto}</td>
+                        <td>${conductor.licencia}</td>
+                        <td>${conductor.telefono}</td>
+                        <td>${conductor.usuario ? conductor.usuario.correo : 'N/A'}</td>
+                        <td>
+                            <div style="display:flex;gap:8px;">
+                                <button class="btn btn-primary" onclick='editarConductor(${JSON.stringify(conductor).replaceAll("'", "\\'")})'>✏️ Editar</button>
+                                <button class="btn btn-danger" onclick="eliminarConductor(${conductor.id})">🗑️ Eliminar</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            html += '</tbody></table></div>';
+            content.innerHTML = html;
+        } catch (error) {
+            content.innerHTML = '<div class="message error">Error al cargar conductores</div>';
+            console.error(error);
+        }
+    }
+
+    // Abrir form para editar conductor (se pasa objeto conductor)
+    function editarConductor(conductor) {
+        // conductor es un objeto enviado desde onclick; si viene como string, parsearlo
+        // (la llamada en HTML utiliza JSON.stringify para mantener el objeto)
+        mostrarFormConductor(false, conductor);
+    }
+
+    // ---------- FUNCIONES CRUD para RUTAS ----------
+    function mostrarFormRuta(isNew = true, ruta = null) {
+        document.getElementById('form-ruta-panel').style.display = 'block';
+        const title = document.getElementById('form-ruta-title');
+        const submitBtn = document.getElementById('ruta-submit-btn');
+        const deleteBtn = document.getElementById('ruta-delete-btn');
+        const mensaje = document.getElementById('mensaje-ruta');
+
+        mensaje.style.display = 'none'; mensaje.textContent = '';
+
+        if (isNew) {
+            title.textContent = 'Crear Ruta';
+            submitBtn.textContent = 'Crear Ruta';
+            deleteBtn.style.display = 'none';
+            document.getElementById('ruta-id').value = '';
+            document.getElementById('ruta-nombre').value = '';
+            document.getElementById('ruta-origen').value = '';
+            document.getElementById('ruta-destino').value = '';
+            document.getElementById('ruta-duracion').value = '';
+        } else {
+            title.textContent = 'Editar Ruta';
+            submitBtn.textContent = 'Guardar cambios';
+            deleteBtn.style.display = 'inline-block';
+            document.getElementById('ruta-id').value = ruta.id;
+            document.getElementById('ruta-nombre').value = ruta.nombre || '';
+            document.getElementById('ruta-origen').value = ruta.origen || '';
+            document.getElementById('ruta-destino').value = ruta.destino || '';
+            document.getElementById('ruta-duracion').value = ruta.duracionEnMinutos || '';
+        }
+        document.getElementById('form-ruta-panel').scrollIntoView({behavior:'smooth'});
+    }
+
+    function ocultarFormRuta() {
+        document.getElementById('form-ruta-panel').style.display = 'none';
+    }
+
+    // Submit crear/editar ruta
+    async function handleSubmitRuta(event) {
+        event.preventDefault();
+        const id = document.getElementById('ruta-id').value;
+        const nombre = document.getElementById('ruta-nombre').value.trim();
+        const origen = document.getElementById('ruta-origen').value.trim();
+        const destino = document.getElementById('ruta-destino').value.trim();
+        const duracion = parseInt(document.getElementById('ruta-duracion').value, 10);
+
+        const mensaje = document.getElementById('mensaje-ruta');
+        mensaje.style.display = 'none'; mensaje.textContent = '';
+
+        try {
+            if (!id) {
+                // crear ruta
+                const rutaData = { nombre, origen, destino, duracionEnMinutos: duracion };
+                const created = await fetchAPI('/rutas', { method: 'POST', body: JSON.stringify(rutaData) });
+                mensaje.classList.add('success'); mensaje.textContent = `✅ Ruta creada: #${created.id} - ${created.nombre}`; mensaje.style.display = 'block';
+            } else {
+                // editar
+                const rutaData = { nombre, origen, destino, duracionEnMinutos: duracion };
+                await fetchAPI(`/rutas/${id}`, { method: 'PUT', body: JSON.stringify(rutaData) });
+                mensaje.classList.add('success'); mensaje.textContent = `✅ Ruta actualizada (ID: ${id})`; mensaje.style.display = 'block';
+            }
+
+            cargarRutas();
+            cargarEstadisticas();
+            setTimeout(()=>{ ocultarFormRuta(); }, 900);
+
+        } catch (error) {
+            mensaje.classList.add('error'); mensaje.textContent = `❌ ${error.message}`; mensaje.style.display = 'block';
+            console.error('Error crear/editar ruta:', error);
+        }
+    }
+
+    // Confirmar y eliminar ruta
+    function eliminarRutaConfirm() {
+        const id = document.getElementById('ruta-id').value;
+        if (!id) return alert('No hay ruta seleccionada.');
+        if (!confirm('¿Eliminar esta ruta?')) return;
+        eliminarRuta(id);
+    }
+
+    async function eliminarRuta(id) {
+        try {
+            await fetchAPI(`/rutas/${id}`, { method: 'DELETE' });
+            alert('Ruta eliminada');
+            ocultarFormRuta();
+            cargarRutas();
+            cargarEstadisticas();
+            cargarRutasParaSelect();
+        } catch (error) {
+            alert('Error al eliminar ruta: ' + error.message);
+            console.error(error);
+        }
+    }
+
+    // Cargar lista de rutas (con botones editar/eliminar)
+    async function cargarRutas() {
+        const content = document.getElementById('rutas-content');
+        content.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando rutas...</div>';
+        try {
+            const rutas = await fetchAPI('/rutas') || [];
+            if (rutas.length === 0) {
+                content.innerHTML = '<div style="text-align:center;color:#999;">🛣️ No hay rutas</div>';
+                return;
+            }
+            let html = '<div class="table-container"><table><thead><tr><th>ID</th><th>Nombre</th><th>Origen</th><th>Destino</th><th>Duración</th><th>Acciones</th></tr></thead><tbody>';
+            rutas.forEach(ruta => {
+                html += `
+                    <tr>
+                        <td>#${ruta.id}</td>
+                        <td><strong>${ruta.nombre}</strong></td>
+                        <td>${ruta.origen}</td>
+                        <td>${ruta.destino}</td>
+                        <td>${ruta.duracionEnMinutos} min</td>
+                        <td style="display:flex;gap:8px;">
+                            <button class="btn btn-primary" onclick='editarRuta(${JSON.stringify(ruta).replaceAll("'", "\\'")})'>✏️ Editar</button>
+                            <button class="btn btn-danger" onclick="eliminarRuta(${ruta.id})">🗑️ Eliminar</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            html += '</tbody></table></div>';
+            content.innerHTML = html;
+            // actualizar select de rutas para turnos
+            cargarRutasParaSelect();
+        } catch (error) {
+            content.innerHTML = '<div class="message error">Error al cargar rutas</div>';
+            console.error(error);
+        }
+    }
+
+    function editarRuta(ruta) {
+        mostrarFormRuta(false, ruta);
+    }
+
+    // ---------- Utilidades para asignaciones ----------
+    function mostrarFormAsignacion() {
+        document.getElementById('form-asignacion').style.display = 'block';
+        cargarTurnosParaAsignacion();
+        cargarConductoresParaAsignacion();
+    }
+    function ocultarFormAsignacion() {
+        document.getElementById('form-asignacion').style.display = 'none';
+    }
+    async function cargarTurnosParaAsignacion() {
+        try {
+            const turnos = await fetchAPI('/turnos') || [];
+            const select = document.getElementById('asig-turno');
+            select.innerHTML = '<option value="">Seleccione un turno...</option>';
+            turnos.forEach(turno => {
+                const option = document.createElement('option');
+                option.value = turno.id;
+                option.textContent = `${turno.rutaNombre} - ${turno.diaSemana} ${turno.horaInicio}-${turno.horaFin}`;
+                select.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error cargando turnos:', error);
+        }
+    }
+    async function cargarConductoresParaAsignacion() {
+        try {
+            const conductores = await fetchAPI('/conductores') || [];
+            const select = document.getElementById('asig-conductor');
+            select.innerHTML = '<option value="">Seleccione un conductor...</option>';
+            conductores.forEach(conductor => {
+                const option = document.createElement('option');
+                option.value = conductor.id;
+                option.textContent = conductor.nombreCompleto;
+                select.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error cargando conductores:', error);
+        }
+    }
+
+    async function crearAsignacion(event) {
+        event.preventDefault();
+        const data = {
+            turnoId: parseInt(document.getElementById('asig-turno').value),
+            conductorId: parseInt(document.getElementById('asig-conductor').value),
+            fechaInicio: document.getElementById('asig-fecha-inicio').value,
+            fechaFin: document.getElementById('asig-fecha-fin').value || null,
+            estado: 'PROGRAMADA'
+        };
+        try {
+            await fetchAPI('/asignaciones', { method: 'POST', body: JSON.stringify(data) });
+            alert('Asignación creada exitosamente');
+            ocultarFormAsignacion();
+            cargarAsignaciones();
+            cargarEstadisticas();
+        } catch (error) {
+            alert('Error al crear asignación: ' + error.message);
+        }
+    }
+
+    async function iniciarTurno(id) {
+        if (!confirm('¿Iniciar este turno?')) return;
+        try {
+            await fetchAPI(`/asignaciones/${id}/iniciar`, { method: 'PATCH' });
+            alert('Turno iniciado');
+            cargarAsignaciones();
+            cargarEstadisticas();
+        } catch (error) {
+            alert('Error: ' + error.message);
+        }
+    }
+    async function finalizarTurno(id) {
+        if (!confirm('¿Finalizar este turno?')) return;
+        try {
+            await fetchAPI(`/asignaciones/${id}/finalizar`, { method: 'PATCH' });
+            alert('Turno finalizado');
+            cargarAsignaciones();
+            cargarMonitoreo();
+            cargarEstadisticas();
+        } catch (error) {
+            alert('Error: ' + error.message);
+        }
+    }
+    async function cancelarAsignacion(id) {
+        if (!confirm('¿Cancelar esta asignación?')) return;
+        try {
+            await fetchAPI(`/asignaciones/${id}`, { method: 'DELETE' });
+            alert('Asignación cancelada');
+            cargarAsignaciones();
+            cargarEstadisticas();
+        } catch (error) {
+            alert('Error: ' + error.message);
+        }
+    }
+
+    // ---------- Extras (si necesitas crear turnos automáticamente) ----------
+    async function crearTurnoAutomatico(rutaId) {
+        const horaInicio = prompt('Hora de inicio (formato HH:MM)', '05:00');
+        const horaFin = prompt('Hora de fin (formato HH:MM)', '23:00');
+        const semana = prompt('Número de semana', '1');
+
+        if (!horaInicio || !horaFin || !semana) return;
+
+        if (!confirm(`¿Crear turnos de ${horaInicio} a ${horaFin} para la semana ${semana}?`)) {
+            return;
+        }
+
+        try {
+            const response = await fetchAPI(
+                `/turnos/auto?rutaId=${rutaId}&horaInicio=${horaInicio}&horaFin=${horaFin}&numeroSemana=${semana}`,
+                { method: 'POST' }
+            );
+
+            alert(`✅ ${response.mensaje}`);
+            cargarTurnosPorRuta();
+            cargarEstadisticas();
+        } catch (error) {
+            alert('❌ Error: ' + error.message);
+        }
+    }
+</script>
+</body>
+</html>

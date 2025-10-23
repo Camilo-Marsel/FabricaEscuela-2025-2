@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FleetGuard360 - Dashboard Admin</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 1.8rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .badge {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .logout-btn {
+            padding: 10px 20px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #c82333;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #667eea;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab-button {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .tab-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .tab-button.active {
+            background: white;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .content-box {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+
+        .content-box.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        .status-activo {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-programada {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-en-curso {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-finalizada {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .week-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .week-btn {
+            padding: 10px 20px;
+            background: #e0e0e0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .week-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .turno-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .turno-card.occupied {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+
+        .turno-card.empty {
+            border-left-color: #ffc107;
+            background: #fff3cd;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <div>
+            <h1>🚌 FleetGuard360 - Admin</h1>
+            <small id="userEmail" style="color: #666;"></small>
+        </div>
+        <div class="user-info">
+            <span class="badge" id="rolBadge">ADMIN</span>
+            <button class="logout-btn" onclick="cerrarSesion()">🚪 Salir</button>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">📍 Rutas Activas</div>
+            <div class="stat-value" id="statRutas">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">🚗 Conductores</div>
+            <div class="stat-value" id="statConductores">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">⏰ Turnos Programados</div>
+            <div class="stat-value" id="statTurnos">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">✅ Asignaciones Activas</div>
+            <div class="stat-value" id="statAsignaciones">0</div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+        <button class="tab-button active" onclick="showTab('gestion-turnos')">📅 Gestión de Turnos</button>
+        <button class="tab-button" onclick="showTab('asignaciones')">👥 Asignaciones</button>
+        <button class="tab-button" onclick="showTab('monitoreo')">📊 Monitoreo</button>
+        <button class="tab-button" onclick="showTab('conductores')">🚗 Conductores</button>
+        <button class="tab-button" onclick="showTab('rutas')">📍 Rutas</button>
+    </div>
+
+    <!-- Gestión de Turnos -->
+    <div id="gestion-turnos" class="content-box active">
+        <h2 class="section-title">📅 Gestión de Turnos por Ruta</h2>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Seleccionar Ruta:</label>
+                <select id="select-ruta-turnos" onchange="cargarTurnosPorRuta()">
+                    <option value="">Seleccione una ruta...</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="turnos-content">
+            <p style="text-align: center; color: #999;">Seleccione una ruta para ver sus turnos</p>
+        </div>
+    </div>
+
+    <!-- Asignaciones -->
+    <div id="asignaciones" class="content-box">
+        <h2 class="section-title">👥 Asignaciones de Conductores</h2>
+
+        <button class="btn btn-primary" onclick="mostrarFormAsignacion()">+ Nueva Asignación</button>
+
+        <div id="form-asignacion" style="display: none; margin-top: 20px; background: #f8f9fa; padding: 20px; border-radius: 8px;">
+            <h3>Asignar Conductor a Turno</h3>
+            <form onsubmit="crearAsignacion(event)">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Turno:</label>
+                        <select id="asig-turno" required>
+                            <option value="">Cargando...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Conductor:</label>
+                        <select id="asig-conductor" required>
+                            <option value="">Cargando...</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Fecha Inicio:</label>
+                        <input type="date" id="asig-fecha-inicio" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha Fin (opcional):</label>
+                        <input type="date" id="asig-fecha-fin">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Guardar Asignación</button>
+                <button type="button" class="btn btn-secondary" onclick="ocultarFormAsignacion()">Cancelar</button>
+            </form>
+        </div>
+
+        <div id="asignaciones-content" class="table-container">
+            <div class="loading">
+                <div class="spinner"></div>
+                Cargando asignaciones...
+            </div>
+        </div>
+    </div>
+
+    <!-- Monitoreo -->
+    <div id="monitoreo" class="content-box">
+        <h2 class="section-title">📊 Monitoreo en Tiempo Real</h2>
+        <div id="monitoreo-content">
+            <div class="loading">
+                <div class="spinner"></div>
+                Cargando datos...
+            </div>
+        </div>
+    </div>
+
+    <!-- Conductores -->
+    <div id="conductores" class="content-box">
+        <h2 class="section-title">🚗 Gestión de Conductores</h2>
+        <div id="conductores-content">
+            <div class="loading">
+                <div class="spinner"></div>
+                Cargando conductores...
+            </div>
+        </div>
+    </div>
+
+    <!-- Rutas -->
+    <div id="rutas" class="content-box">
+        <h2 class="section-title">📍 Gestión de Rutas</h2>
+        <div id="rutas-content">
+            <div class="loading">
+                <div class="spinner"></div>
+                Cargando rutas...
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_BASE = 'http://localhost:8080/api';
+    let authToken = '';
+    let userEmail = '';
+    let userRole = '';
+
+    // Verificar autenticación
+    window.addEventListener('DOMContentLoaded', () => {
+        authToken = localStorage.getItem('token');
+        userRole = localStorage.getItem('rol');
+        userEmail = localStorage.getItem('correo');
+
+        if (!authToken || userRole !== 'ADMIN') {
+            alert('Acceso denegado. Solo administradores.');
+            window.location.href = '/';
+            return;
+        }
+
+        document.getElementById('userEmail').textContent = userEmail;
+        cargarEstadisticas();
+        cargarRutasParaSelect();
+    });
+
+    function cerrarSesion() {
+        if (confirm('¿Cerrar sesión?')) {
+            localStorage.clear();
+            window.location.href = '/';
+        }
+    }
+
+    async function fetchAPI(endpoint, options = {}) {
+        const response = await fetch(`${API_BASE}${endpoint}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`,
+                ...options.headers
+            },
+            ...options
+        });
+
+        if (response.status === 401) {
+            alert('Sesión expirada');
+            localStorage.clear();
+            window.location.href = '/';
+            return;
+        }
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return await response.json();
+    }
+
+    async function cargarEstadisticas() {
+        try {
+            const [rutas, conductores, turnos, asignaciones] = await Promise.all([
+                fetchAPI('/rutas'),
+                fetchAPI('/conductores'),
+                fetchAPI('/turnos'),
+                fetchAPI('/asignaciones/activas')
+            ]);
+
+            document.getElementById('statRutas').textContent = rutas.length;
+            document.getElementById('statConductores').textContent = conductores.length;
+            document.getElementById('statTurnos').textContent = turnos.length;
+            document.getElementById('statAsignaciones').textContent = asignaciones.length;
+        } catch (error) {
+            console.error('Error cargando estadísticas:', error);
+        }
+    }
+
+    async function cargarRutasParaSelect() {
+        try {
+            const rutas = await fetchAPI('/rutas');
+            const select = document.getElementById('select-ruta-turnos');
+            select.innerHTML = '<option value="">Seleccione una ruta...</option>';
+            rutas.forEach(ruta => {
+                const option = document.createElement('option');
+                option.value = ruta.id;
+                option.textContent = `${ruta.nombre} (${ruta.origen} → ${ruta.destino})`;
+                select.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error cargando rutas:', error);
+        }
+    }
+
+    async function cargarTurnosPorRuta() {
+        const rutaId = document.getElementById('select-ruta-turnos').value;
+        const content = document.getElementById('turnos-content');
+
+        if (!rutaId) {
+            content.innerHTML = '<p style="text-align: center; color: #999;">Seleccione una ruta para ver sus turnos</p>';
+            return;
+        }
+
+        content.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando turnos...</div>';
+
+        try {
+            const turnos = await fetchAPI(`/turnos/ruta/${rutaId}`);
+
+            if (turnos.length === 0) {
+                content.innerHTML = `
+                        <p style="text-align: center; color: #999;">No hay turnos configurados para esta ruta</p>
+                        <button class="btn btn-primary" onclick="crearTurnoAutomatico(${rutaId})">Crear Turnos Automáticamente</button>
+                    `;
+                return;
+            }
+
+            // Agrupar por día
+            const dias = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
+            const nombresDias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+
+            let html = '<div class="table-container"><table><thead><tr><th>Día</th><th>Hora Inicio</th><th>Hora Fin</th><th>Duración</th><th>Semana</th><th>Conductor</th><th>Estado</th></tr></thead><tbody>';
+
+            turnos.forEach(turno => {
+                const diaIndex = dias.indexOf(turno.diaSemana);
+                const nombreDia = nombresDias[diaIndex] || turno.diaSemana;
+                const statusClass = turno.tieneAsignacion ? 'status-activo' : 'status-programada';
+                const conductor = turno.conductorAsignado || 'Sin asignar';
+
+                html += `
+                        <tr>
+                            <td><strong>${nombreDia}</strong></td>
+                            <td>${turno.horaInicio}</td>
+                            <td>${turno.horaFin}</td>
+                            <td>${turno.duracionHoras}h</td>
+                            <td>Semana ${turno.numeroSemana}</td>
+                            <td>${conductor}</td>
+                            <td><span class="${statusClass}">${turno.tieneAsignacion ? 'Asignado' : 'Disponible'}</span></td>
+                        </tr>
+                    `;
+            });
+
+            html += '</tbody></table></div>';
+            content.innerHTML = html;
+
+        } catch (error) {
+            content.innerHTML = '<div class="message error">Error al cargar turnos</div>';
+            console.error(error);
+        }
+    }
+
+    function showTab(tabName) {
+        document.querySelectorAll('.content-box').forEach(box => box.classList.remove('active'));
+        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+
+        document.getElementById(tabName).classList.add('active');
+        event.target.classList.add('active');
+
+        if (tabName === 'asignaciones') cargarAsignaciones();
+        else if (tabName === 'monitoreo') cargarMonitoreo();
+        else if (tabName === 'conductores') cargarConductores();
+        else if (tabName === 'rutas') cargarRutas();
+    }
+
+    async function cargarAsignaciones() {
+        const content = document.getElementById('asignaciones-content');
+        content.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando...</div>';
+
+        try {
+            const asignaciones = await fetchAPI('/asignaciones');
+
+            if (asignaciones.length === 0) {
+                content.innerHTML = '<p style="text-align: center; color: #999;">No hay asignaciones registradas</p>';
+                return;
+            }
+
+            let html = '<table><thead><tr><th>Conductor</th><th>Ruta</th><th>Día</th><th>Horario</th><th>Fecha Inicio</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>';
+
+            asignaciones.forEach(asig => {
+                const statusClass = `status-${asig.estado.toLowerCase().replace('_', '-')}`;
+                html += `
+                        <tr>
+                            <td>${asig.conductorNombre}</td>
+                            <td>${asig.rutaNombre}</td>
+                            <td>${asig.diaSemanaNombre}</td>
+                            <td>${asig.horarioTurno}</td>
+                            <td>${asig.fechaInicio}</td>
+                            <td><span class="${statusClass}">${asig.estado}</span></td>
+                            <td>
+                                ${asig.estado === 'PROGRAMADA' ? `<button class="btn btn-success" onclick="iniciarTurno(${asig.id})">▶️ Iniciar</button>` : ''}
+                                ${asig.estado === 'EN_CURSO' ? `<button class="btn btn-danger" onclick="finalizarTurno(${asig.id})">⏹️ Finalizar</button>` : ''}
+                                ${asig.estado !== 'FINALIZADA' ? `<button class="btn btn-danger" onclick="cancelarAsignacion(${asig.id})">❌</button>` : ''}
+                            </td>
+                        </tr>
+                    `;
+            });
+
+            html += '</tbody></table>';
+            content.innerHTML = html;
+
+        } catch (error) {
+            content.innerHTML = '<div class="message error">Error al cargar asignaciones</div>';
+            console.error(error);
+        }
+    }
+
+    async function cargarMonitoreo() {
+        const content = document.getElementById('monitoreo-content');
+        content.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando...</div>';
+
+        try {
+            const asignacionesActivas = await fetchAPI('/asignaciones/activas');
+
+            if (asignacionesActivas.length === 0) {
+                content.innerHTML = '<div class="message">No hay turnos activos en este momento</div>';
+                return;
+            }
+
+            let html = '<h3>🔴 Turnos en Curso</h3>';
+
+            asignacionesActivas.forEach(asig => {
+                const horaInicio = new Date(asig.horaInicioReal);
+                const ahora = new Date();
+                const minutosTranscurridos = Math.floor((ahora - horaInicio) / 60000);
+                const horasTranscurridas = (minutosTranscurridos / 60).toFixed(1);
+
+                let alertClass = 'status-activo';
+                if (horasTranscurridas > 7.5) alertClass = 'status-en-curso';
+                if (horasTranscurridas > 8) alertClass = 'status-finalizada';
+
+                html += `
+                        <div class="turno-card occupied">
+                            <h4>${asig.conductorNombre} - ${asig.rutaNombre}</h4>
+                            <p><strong>Día:</strong> ${asig.diaSemanaNombre} | <strong>Horario:</strong> ${asig.horarioTurno}</p>
+                            <p><strong>Inicio real:</strong> ${new Date(asig.horaInicioReal).toLocaleString()}</p>
+                            <p class="${alertClass}"><strong>Tiempo transcurrido:</strong> ${horasTranscurridas} horas</p>
+                            <button class="btn btn-danger" onclick="finalizarTurno(${asig.id})">⏹️ Finalizar Turno</button>
+                        </div>
+                    `;
+            });
+
+            content.innerHTML = html;
+
+        } catch (error) {
+            content.innerHTML = '<div class="message error">Error al cargar monitoreo</div>';
+            console.error(error);
+        }
+    }
+
+    async function cargarConductores() {
+        const content = document.getElementById('conductores-content');
+        content.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando...</div>';
+
+        try {
+            const conductores = await fetchAPI('/conductores');
+
+            let html = '<div class="table-container"><table><thead><tr><th>ID</th><th>Nombre</th><th>Licencia</th><th>Teléfono</th><th>Usuario</th></tr></thead><tbody>';
+
+            conductores.forEach(conductor => {
+                html += `
+                        <tr>
+                            <td>#${conductor.id}</td>
+                            <td>${conductor.nombreCompleto}</td>
+                            <td>${conductor.licencia}</td>
+                            <td>${conductor.telefono}</td>
+                            <td>${conductor.usuario ? conductor.usuario.correo : 'N/A'}</td>
+                        </tr>
+                    `;
+            });
+
+            html += '</tbody></table></div>';
+            content.innerHTML = html;
+
+        } catch (error) {
+            content.innerHTML = '<div class="message error">Error al cargar conductores</div>';
+            console.error(error);
+        }
+    }
+
+    async function cargarRutas() {
+        const content = document.getElementById('rutas-content');
+        content.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando...</div>';
+
+        try {
+            const rutas = await fetchAPI('/rutas');
+
+            let html = '<div class="table-container"><table><thead><tr><th>ID</th><th>Nombre</th><th>Origen</th><th>Destino</th><th>Duración</th></tr></thead><tbody>';
+
+            rutas.forEach(ruta => {
+                html += `
+                        <tr>
+                            <td>#${ruta.id}</td>
+                            <td><strong>${ruta.nombre}</strong></td>
+                            <td>${ruta.origen}</td>
+                            <td>${ruta.destino}</td>
+                            <td>${ruta.duracionEnMinutos} min</td>
+                        </tr>
+                    `;
+            });
+
+            html += '</tbody></table></div>';
+            content.innerHTML = html;
+
+        } catch (error) {
+            content.innerHTML = '<div class="message error">Error al cargar rutas</div>';
+            console.error(error);
+        }
+    }
+
+    function mostrarFormAsignacion() {
+        document.getElementById('form-asignacion').style.display = 'block';
+        cargarTurnosParaAsignacion();
+        cargarConductoresParaAsignacion();
+    }
+
+    function ocultarFormAsignacion() {
+        document.getElementById('form-asignacion').style.display = 'none';
+    }
+
+    async function cargarTurnosParaAsignacion() {
+        try {
+            const turnos = await fetchAPI('/turnos');
+            const select = document.getElementById('asig-turno');
+            select.innerHTML = '<option value="">Seleccione un turno...</option>';
+
+            turnos.forEach(turno => {
+                const option = document.createElement('option');
+                option.value = turno.id;
+                option.textContent = `${turno.rutaNombre} - ${turno.diaSemana} ${turno.horaInicio}-${turno.horaFin}`;
+                select.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error cargando turnos:', error);
+        }
+    }
+
+    async function cargarConductoresParaAsignacion() {
+        try {
+            const conductores = await fetchAPI('/conductores');
+            const select = document.getElementById('asig-conductor');
+            select.innerHTML = '<option value="">Seleccione un conductor...</option>';
+
+            conductores.forEach(conductor => {
+                const option = document.createElement('option');
+                option.value = conductor.id;
+                option.textContent = conductor.nombreCompleto;
+                select.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error cargando conductores:', error);
+        }
+    }
+
+    async function crearAsignacion(event) {
+        event.preventDefault();
+
+        const data = {
+            turnoId: parseInt(document.getElementById('asig-turno').value),
+            conductorId: parseInt(document.getElementById('asig-conductor').value),
+            fechaInicio: document.getElementById('asig-fecha-inicio').value,
+            fechaFin: document.getElementById('asig-fecha-fin').value || null,
+            estado: 'PROGRAMADA'
+        };
+
+        try {
+            await fetchAPI('/asignaciones', {
+                method: 'POST',
+                body: JSON.stringify(data)
+            });
+
+            alert('Asignación creada exitosamente');
+            ocultarFormAsignacion();
+            cargarAsignaciones();
+            cargarEstadisticas();
+
+        } catch (error) {
+            alert('Error al crear asignación: ' + error.message);
+        }
+    }
+
+    async function iniciarTurno(id) {
+        if (!confirm('¿Iniciar este turno?')) return;
+
+        try {
+            await fetchAPI(`/asignaciones/${id}/iniciar`, { method: 'PATCH' });
+            alert('Turno iniciado');
+            cargarAsignaciones();
+            cargarEstadisticas();
+        } catch (error) {
+            alert('Error: ' + error.message);
+        }
+    }
+
+    async function finalizarTurno(id) {
+        if (!confirm('¿Finalizar este turno?')) return;
+
+        try {
+            await fetchAPI(`/asignaciones/${id}/finalizar`, { method: 'PATCH' });
+            alert('Turno finalizado');
+            cargarAsignaciones();
+            cargarMonitoreo();
+            cargarEstadisticas();
+        } catch (error) {
+            alert('Error: ' + error.message);
+        }
+    }
+
+    async function cancelarAsignacion(id) {
+        if (!confirm('¿Cancelar esta asignación?')) return;
+
+        try {
+            await fetchAPI(`/asignaciones/${id}`, { method: 'DELETE' });
+            alert('Asignación cancelada');
+            cargarAsignaciones();
+            cargarEstadisticas();
+        } catch (error) {
+            alert('Error: ' + error.message);
+        }
+    }
+</script>
+</body>
+</html>

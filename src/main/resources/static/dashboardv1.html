@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FleetGuard360 - Dashboard</title>
+    <title>Dashboard API - Conductores y Rutas</title>
     <style>
         * {
             margin: 0;
@@ -24,64 +24,19 @@
         }
 
         .header {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 20px 30px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .header-left h1 {
-            color: #667eea;
-            font-size: 2rem;
-            margin-bottom: 5px;
-        }
-
-        .header-left p {
-            color: #666;
-            font-size: 0.9rem;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .user-badge {
-            background: #667eea;
+            text-align: center;
             color: white;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: bold;
+            margin-bottom: 40px;
         }
 
-        .user-badge.admin {
-            background: linear-gradient(45deg, #667eea, #764ba2);
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
         }
 
-        .user-badge.conductor {
-            background: linear-gradient(45deg, #11998e, #38ef7d);
-        }
-
-        .logout-btn {
-            padding: 10px 20px;
-            background: #dc3545;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.3s;
-        }
-
-        .logout-btn:hover {
-            background: #c82333;
-            transform: translateY(-2px);
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
         }
 
         .tabs {
@@ -89,7 +44,6 @@
             justify-content: center;
             margin-bottom: 30px;
             gap: 10px;
-            flex-wrap: wrap;
         }
 
         .tab-button {
@@ -253,6 +207,7 @@
             100% { transform: rotate(360deg); }
         }
 
+        /* Estilos para formularios */
         .form-container {
             max-width: 600px;
             margin: 0 auto;
@@ -350,19 +305,9 @@
 </head>
 <body>
 <div class="container">
-    <!-- Header con info de usuario -->
     <div class="header">
-        <div class="header-left">
-            <h1>🚌 FleetGuard360</h1>
-            <p>Dashboard de Gestión</p>
-        </div>
-        <div class="user-info">
-            <div>
-                <div class="user-badge" id="rolBadge"></div>
-                <small id="userEmail" style="color: #666;"></small>
-            </div>
-            <button class="logout-btn" onclick="cerrarSesion()">🚪 Salir</button>
-        </div>
+        <h1>🚗 Dashboard API</h1>
+        <p>Gestión de Conductores y Rutas</p>
     </div>
 
     <div class="tabs">
@@ -401,8 +346,8 @@
 
     <div id="rutas" class="tab-content">
         <div class="section-header">
-            <h2 class="section-title">🛣️ Rutas</h2>
-            <button class="refresh-btn" onclick="loadRutas()">🔄 Actualizar</button>
+            <h2 class="section-title">Rutas</h2>
+            <button class="refresh-btn" onclick="loadRutas()">Actualizar</button>
         </div>
         <div id="rutas-content">
             <div class="loading">
@@ -412,9 +357,10 @@
         </div>
     </div>
 
+    <!-- Tab para agregar conductor -->
     <div id="agregar-conductor" class="tab-content">
         <div class="section-header">
-            <h2 class="section-title">➕ Agregar Conductor</h2>
+            <h2 class="section-title">Agregar Conductor</h2>
         </div>
         <div class="form-container">
             <form id="form-conductor" onsubmit="crearConductor(event)">
@@ -447,9 +393,10 @@
         </div>
     </div>
 
+    <!-- Tab para agregar ruta -->
     <div id="agregar-ruta" class="tab-content">
         <div class="section-header">
-            <h2 class="section-title">➕ Agregar Ruta</h2>
+            <h2 class="section-title">Agregar Ruta</h2>
         </div>
         <div class="form-container">
             <form id="form-ruta" onsubmit="crearRuta(event)">
@@ -481,51 +428,24 @@
 
 <script>
     const API_BASE = 'http://localhost:8080';
-    let authToken = '';
-    let userRole = '';
-    let userEmail = '';
 
-    // Verificar autenticación al cargar la página
-    window.addEventListener('DOMContentLoaded', () => {
-        authToken = localStorage.getItem('token');
-        userRole = localStorage.getItem('rol');
-        userEmail = localStorage.getItem('correo');
-
-        if (!authToken) {
-            // No hay sesión, redirigir al login
-            window.location.href = '/';
-            return;
-        }
-
-        // Mostrar información del usuario
-        const rolBadge = document.getElementById('rolBadge');
-        rolBadge.textContent = `${userRole}`;
-        rolBadge.classList.add(userRole.toLowerCase());
-        document.getElementById('userEmail').textContent = userEmail;
-
-        // Cargar datos iniciales
-        loadUsuarios();
-    });
-
-    function cerrarSesion() {
-        if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
-            localStorage.clear();
-            window.location.href = '/';
-        }
-    }
-
+    // Función para cambiar tabs
     function showTab(tabName) {
+        // Ocultar todos los tabs
         document.querySelectorAll('.tab-content').forEach(tab => {
             tab.classList.remove('active');
         });
 
+        // Remover clase active de todos los botones
         document.querySelectorAll('.tab-button').forEach(btn => {
             btn.classList.remove('active');
         });
 
+        // Mostrar tab seleccionado
         document.getElementById(tabName).classList.add('active');
         event.target.classList.add('active');
 
+        // Cargar datos si no se han cargado
         if (tabName === 'usuarios') loadUsuarios();
         else if (tabName === 'conductores') loadConductores();
         else if (tabName === 'rutas') loadRutas();
@@ -533,24 +453,16 @@
         else if (tabName === 'agregar-ruta') limpiarFormRuta();
     }
 
+    // Función para hacer peticiones HTTP
     async function fetchData(endpoint, options = {}) {
         try {
             const response = await fetch(`${API_BASE}${endpoint}`, {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${authToken}`,
                     ...options.headers
                 },
                 ...options
             });
-
-            if (response.status === 401) {
-                // Token inválido o expirado
-                alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
-                localStorage.clear();
-                window.location.href = '/';
-                return;
-            }
 
             if (!response.ok) {
                 const errorText = await response.text();
@@ -563,168 +475,180 @@
         }
     }
 
+    // Cargar usuarios
     async function loadUsuarios() {
         const content = document.getElementById('usuarios-content');
         content.innerHTML = `
-            <div class="loading">
-                <div class="spinner"></div>
-                Cargando usuarios...
-            </div>
-        `;
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Cargando usuarios...
+                </div>
+            `;
 
         try {
             const usuarios = await fetchData('/usuarios');
 
             if (usuarios.length === 0) {
                 content.innerHTML = `
-                    <div class="empty">
-                        <h3>📭 No hay usuarios</h3>
-                        <p>No se encontraron usuarios en la base de datos</p>
-                    </div>
-                `;
+                        <div class="empty">
+                            <h3>📭 No hay usuarios</h3>
+                            <p>No se encontraron usuarios en la base de datos</p>
+                        </div>
+                    `;
                 return;
             }
 
             const cardsHtml = usuarios.map(usuario => `
-                <div class="card">
-                    <h3>👤 Usuario #${usuario.id}</h3>
-                    <div class="card-field">
-                        <span class="field-label">📧 Correo:</span>
-                        <span class="field-value">${usuario.correo}</span>
+                    <div class="card">
+                        <h3>👤 Usuario #${usuario.id}</h3>
+                        <div class="card-field">
+                            <span class="field-label">📧 Correo:</span>
+                            <span class="field-value">${usuario.correo}</span>
+                        </div>
+                        <div class="card-field">
+                            <span class="field-label">🏷️ Rol:</span>
+                            <span class="badge">${usuario.rol}</span>
+                        </div>
                     </div>
-                    <div class="card-field">
-                        <span class="field-label">🏷️ Rol:</span>
-                        <span class="badge">${usuario.rol}</span>
-                    </div>
-                </div>
-            `).join('');
+                `).join('');
 
             content.innerHTML = `<div class="cards-grid">${cardsHtml}</div>`;
 
         } catch (error) {
             content.innerHTML = `
-                <div class="error">
-                    <h3>❌ Error al cargar usuarios</h3>
-                    <p>${error.message}</p>
-                </div>
-            `;
+                    <div class="error">
+                        <h3>❌ Error al cargar usuarios</h3>
+                        <p>No se pudo conectar con la API: ${error.message}</p>
+                        <p><strong>Asegúrate de que tu aplicación Spring Boot esté corriendo en http://localhost:8080</strong></p>
+                    </div>
+                `;
         }
     }
 
+    // Cargar conductores
     async function loadConductores() {
         const content = document.getElementById('conductores-content');
         content.innerHTML = `
-            <div class="loading">
-                <div class="spinner"></div>
-                Cargando conductores...
-            </div>
-        `;
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Cargando conductores...
+                </div>
+            `;
 
         try {
             const conductores = await fetchData('/conductores');
 
             if (conductores.length === 0) {
                 content.innerHTML = `
-                    <div class="empty">
-                        <h3>🚗 No hay conductores</h3>
-                        <p>No se encontraron conductores registrados</p>
-                    </div>
-                `;
+                        <div class="empty">
+                            <h3>🚗 No hay conductores</h3>
+                            <p>No se encontraron conductores registrados</p>
+                        </div>
+                    `;
                 return;
             }
 
             const cardsHtml = conductores.map(conductor => `
-                <div class="card">
-                    <h3>🚗 ${conductor.nombreCompleto}</h3>
-                    <div class="card-field">
-                        <span class="field-label">🆔 ID:</span>
-                        <span class="field-value">#${conductor.id}</span>
+                    <div class="card">
+                        <h3>🚗 ${conductor.nombreCompleto}</h3>
+                        <div class="card-field">
+                            <span class="field-label">🆔 ID:</span>
+                            <span class="field-value">#${conductor.id}</span>
+                        </div>
+                        <div class="card-field">
+                            <span class="field-label">📄 Licencia:</span>
+                            <span class="field-value">${conductor.licencia}</span>
+                        </div>
+                        <div class="card-field">
+                            <span class="field-label">📱 Teléfono:</span>
+                            <span class="field-value">${conductor.telefono}</span>
+                        </div>
+                        ${conductor.usuario ? `
+                        <div class="card-field">
+                            <span class="field-label">👤 Usuario:</span>
+                            <span class="field-value">${conductor.usuario.correo}</span>
+                        </div>
+                        ` : ''}
                     </div>
-                    <div class="card-field">
-                        <span class="field-label">📄 Licencia:</span>
-                        <span class="field-value">${conductor.licencia}</span>
-                    </div>
-                    <div class="card-field">
-                        <span class="field-label">📱 Teléfono:</span>
-                        <span class="field-value">${conductor.telefono}</span>
-                    </div>
-                    ${conductor.usuario ? `
-                    <div class="card-field">
-                        <span class="field-label">👤 Usuario:</span>
-                        <span class="field-value">${conductor.usuario.correo}</span>
-                    </div>
-                    ` : ''}
-                </div>
-            `).join('');
+                `).join('');
 
             content.innerHTML = `<div class="cards-grid">${cardsHtml}</div>`;
 
         } catch (error) {
             content.innerHTML = `
-                <div class="error">
-                    <h3>❌ Error al cargar conductores</h3>
-                    <p>${error.message}</p>
-                </div>
-            `;
+                    <div class="error">
+                        <h3>❌ Error al cargar conductores</h3>
+                        <p>No se pudo conectar con la API: ${error.message}</p>
+                        <p><strong>Asegúrate de que tu aplicación Spring Boot esté corriendo en http://localhost:8080</strong></p>
+                    </div>
+                `;
         }
     }
 
+    // Cargar rutas
     async function loadRutas() {
         const content = document.getElementById('rutas-content');
         content.innerHTML = `
-            <div class="loading">
-                <div class="spinner"></div>
-                Cargando rutas...
-            </div>
-        `;
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Cargando rutas...
+                </div>
+            `;
 
         try {
             const rutas = await fetchData('/rutas');
 
             if (rutas.length === 0) {
                 content.innerHTML = `
-                    <div class="empty">
-                        <h3>🛣️ No hay rutas</h3>
-                        <p>No se encontraron rutas registradas</p>
-                    </div>
-                `;
+                        <div class="empty">
+                            <h3>🛣️ No hay rutas</h3>
+                            <p>No se encontraron rutas registradas</p>
+                        </div>
+                    `;
                 return;
             }
 
             const cardsHtml = rutas.map(ruta => `
-                <div class="card">
-                    <h3>🛣️ ${ruta.nombre}</h3>
-                    <div class="card-field">
-                        <span class="field-label">🆔 ID:</span>
-                        <span class="field-value">#${ruta.id}</span>
+                    <div class="card">
+                        <h3>🛣️ ${ruta.nombre}</h3>
+                        <div class="card-field">
+                            <span class="field-label">🆔 ID:</span>
+                            <span class="field-value">#${ruta.id}</span>
+                        </div>
+                        <div class="card-field">
+                            <span class="field-label">🏁 Origen:</span>
+                            <span class="field-value">${ruta.origen}</span>
+                        </div>
+                        <div class="card-field">
+                            <span class="field-label">🎯 Destino:</span>
+                            <span class="field-value">${ruta.destino}</span>
+                        </div>
+                        <div class="card-field">
+                            <span class="field-label">⏱️ Duración:</span>
+                            <span class="badge">${ruta.duracionEnMinutos} min</span>
+                        </div>
                     </div>
-                    <div class="card-field">
-                        <span class="field-label">🏁 Origen:</span>
-                        <span class="field-value">${ruta.origen}</span>
-                    </div>
-                    <div class="card-field">
-                        <span class="field-label">🎯 Destino:</span>
-                        <span class="field-value">${ruta.destino}</span>
-                    </div>
-                    <div class="card-field">
-                        <span class="field-label">⏱️ Duración:</span>
-                        <span class="badge">${ruta.duracionEnMinutos} min</span>
-                    </div>
-                </div>
-            `).join('');
+                `).join('');
 
             content.innerHTML = `<div class="cards-grid">${cardsHtml}</div>`;
 
         } catch (error) {
             content.innerHTML = `
-                <div class="error">
-                    <h3>❌ Error al cargar rutas</h3>
-                    <p>${error.message}</p>
-                </div>
-            `;
+                    <div class="error">
+                        <h3>❌ Error al cargar rutas</h3>
+                        <p>No se pudo conectar con la API: ${error.message}</p>
+                        <p><strong>Asegúrate de que tu aplicación Spring Boot esté corriendo en http://localhost:8080</strong></p>
+                    </div>
+                `;
         }
     }
 
+    // Cargar usuarios al inicio
+    document.addEventListener('DOMContentLoaded', () => {
+        loadUsuarios();
+    });
+
+    // Funciones para formularios
     async function crearConductor(event) {
         event.preventDefault();
 
@@ -732,12 +656,14 @@
         const mensajeElement = document.getElementById('mensaje-conductor');
         const submitButton = event.target.querySelector('button[type="submit"]');
 
+        // Deshabilitar botón mientras se procesa
         submitButton.disabled = true;
         submitButton.textContent = 'Creando...';
         mensajeElement.className = 'mensaje-resultado';
         mensajeElement.textContent = '';
 
         try {
+            // Primero crear el usuario
             const usuarioData = {
                 correo: formData.get('correo'),
                 password: formData.get('password'),
@@ -749,6 +675,7 @@
                 body: JSON.stringify(usuarioData)
             });
 
+            // Luego crear el conductor
             const conductorData = {
                 nombreCompleto: formData.get('nombreCompleto'),
                 licencia: formData.get('licencia'),
@@ -763,12 +690,14 @@
 
             mensajeElement.className = 'mensaje-resultado success';
             mensajeElement.innerHTML = `
-                ✅ <strong>Conductor creado exitosamente!</strong><br>
-                ID: #${conductor.id} - ${conductor.nombreCompleto}
-            `;
+                    ✅ <strong>Conductor creado exitosamente!</strong><br>
+                    ID: #${conductor.id} - ${conductor.nombreCompleto}
+                `;
 
+            // Limpiar formulario
             event.target.reset();
 
+            // Actualizar lista de conductores si están visibles
             if (document.getElementById('conductores').classList.contains('active')) {
                 loadConductores();
             }
@@ -776,9 +705,9 @@
         } catch (error) {
             mensajeElement.className = 'mensaje-resultado error';
             mensajeElement.innerHTML = `
-                ❌ <strong>Error al crear conductor:</strong><br>
-                ${error.message}
-            `;
+                    ❌ <strong>Error al crear conductor:</strong><br>
+                    ${error.message}
+                `;
         } finally {
             submitButton.disabled = false;
             submitButton.textContent = 'Crear Conductor';
@@ -792,6 +721,7 @@
         const mensajeElement = document.getElementById('mensaje-ruta');
         const submitButton = event.target.querySelector('button[type="submit"]');
 
+        // Deshabilitar botón mientras se procesa
         submitButton.disabled = true;
         submitButton.textContent = 'Creando...';
         mensajeElement.className = 'mensaje-resultado';
@@ -812,12 +742,14 @@
 
             mensajeElement.className = 'mensaje-resultado success';
             mensajeElement.innerHTML = `
-                ✅ <strong>Ruta creada exitosamente!</strong><br>
-                ID: #${ruta.id} - ${ruta.nombre} (${ruta.origen} → ${ruta.destino})
-            `;
+                    ✅ <strong>Ruta creada exitosamente!</strong><br>
+                    ID: #${ruta.id} - ${ruta.nombre} (${ruta.origen} → ${ruta.destino})
+                `;
 
+            // Limpiar formulario
             event.target.reset();
 
+            // Actualizar lista de rutas si están visibles
             if (document.getElementById('rutas').classList.contains('active')) {
                 loadRutas();
             }
@@ -825,9 +757,9 @@
         } catch (error) {
             mensajeElement.className = 'mensaje-resultado error';
             mensajeElement.innerHTML = `
-                ❌ <strong>Error al crear ruta:</strong><br>
-                ${error.message}
-            `;
+                    ❌ <strong>Error al crear ruta:</strong><br>
+                    ${error.message}
+                `;
         } finally {
             submitButton.disabled = false;
             submitButton.textContent = 'Crear Ruta';

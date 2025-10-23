@@ -9,8 +9,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/*@RestController
+@RequestMapping("/conductores")*/
 @RestController
-@RequestMapping("/conductores")
+@RequestMapping("/api/conductores")
+@CrossOrigin(origins = "*")
 public class ConductorController {
 
     private final ConductorService conductorService;
