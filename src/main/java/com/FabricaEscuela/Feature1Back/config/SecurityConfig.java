@@ -38,7 +38,7 @@ public class SecurityConfig {
                         .requestMatchers("/h2-console/**").permitAll()
 
                         // Auth endpoints públicos
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/auth/**", "/health").permitAll()
 
                         // TODOS los endpoints de API requieren autenticación
                         .requestMatchers("/api/**").authenticated()
