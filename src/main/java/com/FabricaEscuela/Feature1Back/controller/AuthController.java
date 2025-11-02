@@ -28,7 +28,8 @@ public class AuthController {
         try {
             String mensaje = authService.login(request.getCorreo(), request.getPassword());
             return ResponseEntity.ok(MessageResponse.builder()
-                    .mensaje(mensaje)
+                    .mensaje("Código de verificación enviado al correo del usuario")
+                    .codigo(mensaje)
                     .build());
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)

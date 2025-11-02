@@ -23,7 +23,7 @@ public class Feature1BackApplication {
 		return args -> {
 			if (userRepository.findByCorreo("admin").isEmpty()) {
 				Usuario admin = new Usuario();
-				admin.setCorreo("camiloike2@gmail.com");
+				admin.setCorreo("user-admin-test@yopmail.com");
 				admin.setPassword(passwordEncoder.encode("admin123")); // recuerda codificar la contraseña
 				admin.setRol(Rol.ADMIN);
 				userRepository.save(admin);

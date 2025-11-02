@@ -14,4 +14,5 @@ import lombok.NoArgsConstructor;
 @Builder
 public class MessageResponse {
     private String mensaje;
+    private String codigo;
 }

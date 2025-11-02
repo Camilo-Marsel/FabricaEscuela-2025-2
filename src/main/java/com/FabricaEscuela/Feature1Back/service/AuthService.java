@@ -66,7 +66,7 @@ public class AuthService {
         // Enviar email
         emailService.enviarCodigoVerificacion(correo, codigo);
 
-        return "Código de verificación enviado al correo " + correo;
+        return codigo;
     }
 
     @Transactional
