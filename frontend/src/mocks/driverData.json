@@ -1,0 +1,25 @@
+{
+  "driver": {
+    "id": "CN001",
+    "name": "Juan Pérez",
+    "email": "juan.perez@momentum.com",
+    "phone": "+1234567890",
+    "license": "CN001",
+    "status": "active"
+  },
+  "journey": {
+    "id": "J001",
+    "date": "2025-01-15",
+    "startTime": "6:00",
+    "estimatedEndTime": "14:00",
+    "workedHours": 0,
+    "workedMinutes": 0,
+    "totalHours": 8,
+    "status": "inactive",
+    "isActive": false
+  },
+  "notifications": {
+    "email": true,
+    "push": true
+  }
+}

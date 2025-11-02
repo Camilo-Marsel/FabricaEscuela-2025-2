@@ -1,0 +1,62 @@
+[
+  {
+    "id": "T001",
+    "driverId": "D001",
+    "driverName": "Juan Pérez",
+    "driverLicense": "12345678",
+    "routeId": "R001",
+    "routeName": "Ruta Norte",
+    "startDate": "2024-01-15",
+    "startTime": "06:00",
+    "duration": 3.5,
+    "status": "active"
+  },
+  {
+    "id": "T002",
+    "driverId": "D002",
+    "driverName": "María García",
+    "driverLicense": "23456789",
+    "routeId": "R003",
+    "routeName": "Ruta Sur",
+    "startDate": "2024-01-15",
+    "startTime": "08:00",
+    "duration": 4,
+    "status": "active"
+  },
+  {
+    "id": "T003",
+    "driverId": "D003",
+    "driverName": "Carlos López",
+    "driverLicense": "34567890",
+    "routeId": "R005",
+    "routeName": "Ruta Este",
+    "startDate": "2024-01-15",
+    "startTime": "10:00",
+    "duration": 3,
+    "status": "active"
+  },
+  {
+    "id": "T004",
+    "driverId": "D004",
+    "driverName": "Ana Martínez",
+    "driverLicense": "45678901",
+    "routeId": "R002",
+    "routeName": "Ruta Oeste",
+    "startDate": "2024-01-15",
+    "startTime": "12:00",
+    "duration": 2.5,
+    "status": "active"
+  },
+  {
+    "id": "T005",
+    "driverId": "D005",
+    "driverName": "Roberto Silva",
+    "driverLicense": "56789012",
+    "routeId": "R004",
+    "routeName": "Ruta Centro",
+    "startDate": "2024-01-15",
+    "startTime": "14:00",
+    "duration": 3.5,
+    "status": "active"
+  }
+]

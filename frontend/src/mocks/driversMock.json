@@ -1,0 +1,50 @@
+[
+  {
+    "id": "D001",
+    "name": "Juan Pérez",
+    "license": "12345678",
+    "email": "juan.perez@momentum.com",
+    "phone": "+1234567890",
+    "status": "active"
+  },
+  {
+    "id": "D002",
+    "name": "María García",
+    "license": "23456789",
+    "email": "maria.garcia@momentum.com",
+    "phone": "+1234567891",
+    "status": "active"
+  },
+  {
+    "id": "D003",
+    "name": "Carlos López",
+    "license": "34567890",
+    "email": "carlos.lopez@momentum.com",
+    "phone": "+1234567892",
+    "status": "active"
+  },
+  {
+    "id": "D004",
+    "name": "Ana Martínez",
+    "license": "45678901",
+    "email": "ana.martinez@momentum.com",
+    "phone": "+1234567893",
+    "status": "active"
+  },
+  {
+    "id": "D005",
+    "name": "Roberto Silva",
+    "license": "56789012",
+    "email": "roberto.silva@momentum.com",
+    "phone": "+1234567894",
+    "status": "active"
+  },
+  {
+    "id": "D006",
+    "name": "Carlos Mendoza",
+    "license": "67890123",
+    "email": "carlos.mendoza@momentum.com",
+    "phone": "+1234567895",
+    "status": "inactive"
+  }
+]

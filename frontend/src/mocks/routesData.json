@@ -1,0 +1,38 @@
+[
+  {
+    "id": "R001",
+    "name": "Ruta Norte",
+    "origin": "Terminal Central",
+    "destination": "Zona Norte",
+    "startTime": "6:00",
+    "endTime": "7:00",
+    "duration": "1h 00m",
+    "status": "completed",
+    "passengers": 45,
+    "distance": "15 km"
+  },
+  {
+    "id": "R003",
+    "name": "Ruta Centro",
+    "origin": "Centro Comercial",
+    "destination": "Estación Principal",
+    "startTime": "10:30",
+    "endTime": "11:45",
+    "duration": "1h 15m",
+    "status": "in-progress",
+    "passengers": 38,
+    "distance": "12 km"
+  },
+  {
+    "id": "R005",
+    "name": "Ruta Este",
+    "origin": "Zona Residencial",
+    "destination": "Terminal Este",
+    "startTime": "12:00",
+    "endTime": "13:30",
+    "duration": "1h 30m",
+    "status": "scheduled",
+    "passengers": 42,
+    "distance": "18 km"
+  }
+]
