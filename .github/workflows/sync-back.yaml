@@ -32,7 +32,12 @@ jobs:
           # sync current repo into monorepo/back
           # -a : archive, --delete : remove files deleted in source
           # exclude .git to avoid copying the back repo's .git folder into the monorepo
-          rsync -a --delete --exclude='.git' --exclude='/tmp/monorepo' ./ /tmp/monorepo/back/
+          rsync -a --delete \
+            --exclude='.git' \
+            --exclude='/tmp/monorepo' \
+            --exclude='.github' \
+            --exclude='.gitignore' \
+            ./ /tmp/monorepo/back/
 
       - name: Commit & Push changes if any
         env:
