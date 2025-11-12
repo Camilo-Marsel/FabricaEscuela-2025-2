@@ -1,0 +1,56 @@
+name: Sync Back to Monorepo
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Back repo
+        uses: actions/checkout@v4
+        # by default checkout goes to $GITHUB_WORKSPACE
+
+      - name: Clone monorepo (outside workspace)
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          # clone outside of the workspace to avoid recursion when copying .
+          rm -rf /tmp/monorepo
+          git clone https://clemgi0:${GH_PAT}@github.com/clemgi0/fleetguard360_fabrica-escuela-2025-2_integration.git /tmp/monorepo
+          ls -la /tmp/monorepo
+
+      - name: Replace back folder in monorepo (rsync)
+        run: |
+          # remove old back and ensure folder exists
+          rm -rf /tmp/monorepo/back
+          mkdir -p /tmp/monorepo/back
+
+          # sync current repo into monorepo/back
+          # -a : archive, --delete : remove files deleted in source
+          # exclude .git to avoid copying the back repo's .git folder into the monorepo
+          rsync -a --delete --exclude='.git' --exclude='/tmp/monorepo' ./ /tmp/monorepo/back/
+
+      - name: Commit & Push changes if any
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          cd /tmp/monorepo
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+
+          # show what changed for debugging
+          git status --porcelain || true
+          git add -A
+
+          # commit only if there are changes
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "🔄 Sync back from FabricaEscuela-2025-2 (workflow)"
+            # push using token (already in origin remote but we force url auth to be safe)
+            git push https://clemgi0:${GH_PAT}@github.com/clemgi0/fleetguard360_fabrica-escuela-2025-2_integration.git HEAD:main
+          fi
