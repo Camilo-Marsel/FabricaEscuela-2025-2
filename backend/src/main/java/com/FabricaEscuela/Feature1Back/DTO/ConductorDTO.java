@@ -32,6 +32,9 @@ public class ConductorDTO {
 
     private String correo; // ✅ Mantener para backend
 
+    @NotBlank(message = "La contraseña es obligatoria")
+    private String password;
+
     private Long usuarioId;
     private String usuarioCorreo;
     private String usuarioRol;

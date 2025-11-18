@@ -24,7 +24,7 @@ export const CreateDriverModal = ({ open, onOpenChange, onDriverCreated }: Creat
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => { // ✅ AGREGADO async
     e.preventDefault();
 
     // Validación básica
@@ -47,18 +47,28 @@ export const CreateDriverModal = ({ open, onOpenChange, onDriverCreated }: Creat
       return;
     }
 
+    // ✅ Validar contraseña mínima
+    if (formData.password.length < 6) {
+      toast({
+        title: "Contraseña muy corta",
+        description: "La contraseña debe tener al menos 6 caracteres.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      // ✅ Llamada REAL al backend
+      // ✅ Llamada REAL al backend con password
       await conductoresAPI.create({
         cedula: formData.cedula,
         nombreCompleto: formData.nombreCompleto,
         email: formData.email,
         telefono: formData.telefono || "N/A",
         licencia: formData.licencia || "N/A",
-        correo: formData.email, // Backend espera ambos
-        // El backend creará el usuario automáticamente
+        correo: formData.email,
+        password: formData.password, // ✅ AGREGADO
       });
 
       toast({
