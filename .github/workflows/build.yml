@@ -106,6 +106,15 @@ jobs:
           name: coverage-reports
           path: backend/target/site/jacoco/
 
+      - name: Run Snyk Security Scan
+        uses: snyk/actions/maven@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
+          command: monitor
+
   build-frontend:
     name: Build Frontend
     runs-on: ubuntu-latest

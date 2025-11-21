@@ -40,6 +40,11 @@ public class SecurityConfig {
                         // ============================================
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/api/auth/**", "/health").permitAll()
+                        .requestMatchers("/swagger-ui/**").permitAll()
+                        .requestMatchers("/swagger-ui.html").permitAll()
+                        .requestMatchers("/v3/api-docs/**").permitAll()
+                        .requestMatchers("/swagger-resources/**").permitAll()
+                        .requestMatchers("/webjars/**").permitAll()
                         .requestMatchers("/", "/index.html", "/dashboard.html", "/admin-dashboard.html").permitAll()
                         .requestMatchers("/*.html").permitAll()
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/static/**").permitAll()

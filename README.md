@@ -8,8 +8,11 @@
 [![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=Camilo-Marsel_FabricaEscuela-2025-2&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=Camilo-Marsel_FabricaEscuela-2025-2)
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=Camilo-Marsel_FabricaEscuela-2025-2&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=Camilo-Marsel_FabricaEscuela-2025-2)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=Camilo-Marsel_FabricaEscuela-2025-2&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=Camilo-Marsel_FabricaEscuela-2025-2)
-# FleetGuard360[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=Camilo-Marsel_FabricaEscuela-2025-2&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=Camilo-Marsel_FabricaEscuela-2025-2)
-[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=Camilo-Marsel_FabricaEscuela-2025-2&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=Camilo-Marsel_FabricaEscuela-2025-2)
+
+---
+
+# FleetGuard360
+
 Sistema integral de monitoreo y gestión de flotas para transporte de pasajeros.
 
 ---
