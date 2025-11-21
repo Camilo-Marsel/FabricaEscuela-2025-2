@@ -1,5 +1,15 @@
-# FleetGuard360
+# Etiquetas de calidad
 
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Camilo-Marsel_FabricaEscuela-2025-2&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Camilo-Marsel_FabricaEscuela-2025-2)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=Camilo-Marsel_FabricaEscuela-2025-2&metric=bugs)](https://sonarcloud.io/summary/new_code?id=Camilo-Marsel_FabricaEscuela-2025-2)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=Camilo-Marsel_FabricaEscuela-2025-2&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=Camilo-Marsel_FabricaEscuela-2025-2)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Camilo-Marsel_FabricaEscuela-2025-2&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Camilo-Marsel_FabricaEscuela-2025-2)
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=Camilo-Marsel_FabricaEscuela-2025-2&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=Camilo-Marsel_FabricaEscuela-2025-2)
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=Camilo-Marsel_FabricaEscuela-2025-2&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=Camilo-Marsel_FabricaEscuela-2025-2)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=Camilo-Marsel_FabricaEscuela-2025-2&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=Camilo-Marsel_FabricaEscuela-2025-2)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=Camilo-Marsel_FabricaEscuela-2025-2&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=Camilo-Marsel_FabricaEscuela-2025-2)
+# FleetGuard360[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=Camilo-Marsel_FabricaEscuela-2025-2&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=Camilo-Marsel_FabricaEscuela-2025-2)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=Camilo-Marsel_FabricaEscuela-2025-2&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=Camilo-Marsel_FabricaEscuela-2025-2)
 Sistema integral de monitoreo y gestión de flotas para transporte de pasajeros.
 
 ---
