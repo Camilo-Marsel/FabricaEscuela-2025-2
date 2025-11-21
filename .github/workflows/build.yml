@@ -75,11 +75,11 @@ jobs:
         working-directory: ./backend
         run: |
           chmod +x mvnw
-          ./mvnw clean verify
+          ./mvnw clean verify -Dspring.profiles.active=test
 
       - name: Run Tests with Coverage
         working-directory: ./backend
-        run: ./mvnw test jacoco:report
+        run: ./mvnw test jacoco:report -Dspring.profiles.active=test
 
       - name: SonarCloud Analysis
         working-directory: ./backend
