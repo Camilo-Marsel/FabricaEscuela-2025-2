@@ -3,6 +3,7 @@ package com.FabricaEscuela.Feature1Back.service;
 import com.FabricaEscuela.Feature1Back.DTO.AsignacionTurnoDTO;
 import com.FabricaEscuela.Feature1Back.entity.*;
 import com.FabricaEscuela.Feature1Back.mapper.AsignacionTurnoMapper;
+import com.FabricaEscuela.Feature1Back.mapper.TurnoMapper;
 import com.FabricaEscuela.Feature1Back.repository.AsignacionTurnoRepository;
 import com.FabricaEscuela.Feature1Back.repository.ConductorRepository;
 import com.FabricaEscuela.Feature1Back.repository.TurnoRepository;
@@ -131,6 +132,31 @@ public class AsignacionTurnoService {
         String horario = String.format("%s - %s",
                 asignacion.getTurno().getHoraInicio().toString(),
                 asignacion.getTurno().getHoraFin().toString());
+        dto.setHorarioTurno(horario);
+
+        return dto;
+    }
+
+    @Autowired
+    private TurnoMapper turnoMapper;
+
+    /**
+     * ⭐ NUEVO: Convertir AsignacionTurno a DTO con información completa
+     */
+    public AsignacionTurnoDTO toDTO(AsignacionTurno asignacion) {
+        AsignacionTurnoDTO dto = asignacionTurnoMapper.toDTO(asignacion);
+
+        // Enriquecer con información del turno y la ruta
+        Turno turno = asignacion.getTurno();
+
+        dto.setRutaNombre(turno.getRuta().getNombre());
+        dto.setDiaSemanaNombre(turno.getDiaSemana().name());
+        dto.setNumeroSemana(turno.getNumeroSemana());
+
+        // Formatear horario: "06:00 - 14:00"
+        String horario = String.format("%s - %s",
+                turno.getHoraInicio().toString(),
+                turno.getHoraFin().toString());
         dto.setHorarioTurno(horario);
 
         return dto;

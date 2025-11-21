@@ -5,6 +5,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect } from "react";
+
+// Importar páginas
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -12,9 +14,12 @@ import RoutesPage from "./pages/Routes";
 import Drivers from "./pages/Drivers";
 import Turnos from "./pages/Turnos";
 import TurnosCalendar from "./pages/TurnosCalendar";
+import AsignacionesTurnos from "./pages/AsignacionesTurnos.tsx";
 import DriverNotifications from "./pages/DriverNotifications";
 import DriverDashboard from "./pages/DriverDashboard";
 import NotFound from "./pages/NotFound";
+
+// Importar componentes
 import { ProtectedRoute } from "@/hooks/useAuth";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 
@@ -83,8 +88,18 @@ const App = () => {
                                 </ProtectedRoute>
                             }
                         />
+
+                        {/* Rutas de Turnos */}
                         <Route
                             path="/turnos"
+                            element={
+                                <ProtectedRoute requiredRole="admin">
+                                    <Turnos />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/turnos/calendario"
                             element={
                                 <ProtectedRoute requiredRole="admin">
                                     <TurnosCalendar />
@@ -92,10 +107,10 @@ const App = () => {
                             }
                         />
                         <Route
-                            path="/turnos/table"
+                            path="/asignaciones"
                             element={
                                 <ProtectedRoute requiredRole="admin">
-                                    <Turnos />
+                                    <AsignacionesTurnos />
                                 </ProtectedRoute>
                             }
                         />
@@ -104,7 +119,7 @@ const App = () => {
                         <Route
                             path="/driver-dashboard"
                             element={
-                                <ProtectedRoute requiredRole="driver">
+                                <ProtectedRoute requiredRole="driver">  {/* ⭐ CAMBIAR driver → CONDUCTOR */}
                                     <DriverDashboard />
                                 </ProtectedRoute>
                             }
@@ -112,7 +127,7 @@ const App = () => {
                         <Route
                             path="/driver-notifications"
                             element={
-                                <ProtectedRoute requiredRole="driver">
+                                <ProtectedRoute requiredRole="driver">  {/* ⭐ CAMBIAR driver → CONDUCTOR */}
                                     <DriverNotifications />
                                 </ProtectedRoute>
                             }

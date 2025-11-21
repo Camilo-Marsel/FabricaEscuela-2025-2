@@ -20,10 +20,8 @@ public class TurnoDTO {
 
     private Long id;
 
-    @NotNull(message = "La ruta es obligatoria")
-    private Long rutaId;
-
-    private String rutaNombre; // Para respuestas
+    // ⭐ CAMBIO: Agregar objeto completo de ruta
+    private RutaDTO ruta;  // ← NUEVO: Reemplaza rutaId y rutaNombre
 
     @NotNull(message = "El día de la semana es obligatorio")
     private DayOfWeek diaSemana;
@@ -44,8 +42,7 @@ public class TurnoDTO {
     @NotNull(message = "El estado es obligatorio")
     private EstadoTurno estado;
 
-    // Campo adicional para saber si tiene conductor asignado
+    // Campos adicionales para asignaciones
     private boolean tieneAsignacion;
-
-    private String conductorAsignado; // Nombre del conductor (si existe)
+    private String conductorAsignado;
 }

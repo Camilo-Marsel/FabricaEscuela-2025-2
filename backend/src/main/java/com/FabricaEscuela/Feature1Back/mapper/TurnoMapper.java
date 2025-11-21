@@ -2,23 +2,49 @@ package com.FabricaEscuela.Feature1Back.mapper;
 
 import com.FabricaEscuela.Feature1Back.DTO.TurnoDTO;
 import com.FabricaEscuela.Feature1Back.entity.Turno;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-@Mapper(componentModel = "spring")
-public interface TurnoMapper {
+@Component
+public class TurnoMapper {
 
-    @Mapping(source = "ruta.id", target = "rutaId")
-    @Mapping(source = "ruta.nombre", target = "rutaNombre")
-    @Mapping(target = "tieneAsignacion", ignore = true)
-    @Mapping(target = "conductorAsignado", ignore = true)
-    TurnoDTO toDTO(Turno turno);
+    @Autowired
+    private RutaMapper rutaMapper;  // ← Inyectar RutaMapper
 
-    @Mapping(source = "rutaId", target = "ruta.id")
-    @Mapping(target = "ruta.nombre", ignore = true)
-    @Mapping(target = "ruta.origen", ignore = true)
-    @Mapping(target = "ruta.destino", ignore = true)
-    @Mapping(target = "ruta.duracionEnMinutos", ignore = true)
-    @Mapping(target = "ruta.conductores", ignore = true)
-    Turno toEntity(TurnoDTO turnoDTO);
+    public TurnoDTO toDTO(Turno turno) {
+        if (turno == null) {
+            return null;
+        }
+
+        return TurnoDTO.builder()
+                .id(turno.getId())
+                // ⭐ MAPEAR OBJETO COMPLETO DE RUTA usando RutaMapper
+                .ruta(rutaMapper.toDTO(turno.getRuta()))
+                .diaSemana(turno.getDiaSemana())
+                .horaInicio(turno.getHoraInicio())
+                .horaFin(turno.getHoraFin())
+                .duracionHoras(turno.getDuracionHoras())
+                .numeroSemana(turno.getNumeroSemana())
+                .estado(turno.getEstado())
+                .tieneAsignacion(false)  // Se establece en el servicio
+                .conductorAsignado(null) // Se establece en el servicio
+                .build();
+    }
+
+    public Turno toEntity(TurnoDTO dto) {
+        if (dto == null) {
+            return null;
+        }
+
+        return Turno.builder()
+                .id(dto.getId())
+                // La ruta se establece por separado en el servicio
+                .diaSemana(dto.getDiaSemana())
+                .horaInicio(dto.getHoraInicio())
+                .horaFin(dto.getHoraFin())
+                .duracionHoras(dto.getDuracionHoras())
+                .numeroSemana(dto.getNumeroSemana())
+                .estado(dto.getEstado())
+                .build();
+    }
 }

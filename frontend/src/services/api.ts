@@ -1,5 +1,7 @@
 // frontend/src/services/api.ts
 // Cliente HTTP para conectar con el backend de FleetGuard360
+// Importar tipos desde otros servicios
+import type { AsignacionTurno } from './asignacionesService';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
@@ -33,7 +35,7 @@ export const isAuthenticated = (): boolean => !!getToken();
 // CLIENTE HTTP GENÉRICO
 // ========================================
 
-async function fetchAPI<T = any>(
+async function fetchAPI<T = unknown>(
     endpoint: string,
     options: RequestInit = {}
 ): Promise<T> {
@@ -83,27 +85,27 @@ async function fetchAPI<T = any>(
 // ========================================
 
 const api = {
-    get: <T = any>(endpoint: string) => fetchAPI<T>(endpoint),
+    get: <T = unknown>(endpoint: string) => fetchAPI<T>(endpoint),
 
-    post: <T = any>(endpoint: string, data?: any) =>
+    post: <T = unknown>(endpoint: string, data?: unknown) =>
         fetchAPI<T>(endpoint, {
             method: 'POST',
             body: data ? JSON.stringify(data) : undefined,
         }),
 
-    put: <T = any>(endpoint: string, data?: any) =>
+    put: <T = unknown>(endpoint: string, data?: unknown) =>
         fetchAPI<T>(endpoint, {
             method: 'PUT',
             body: data ? JSON.stringify(data) : undefined,
         }),
 
-    patch: <T = any>(endpoint: string, data?: any) =>
+    patch: <T = unknown>(endpoint: string, data?: unknown) =>
         fetchAPI<T>(endpoint, {
             method: 'PATCH',
             body: data ? JSON.stringify(data) : undefined,
         }),
 
-    delete: <T = any>(endpoint: string) =>
+    delete: <T = unknown>(endpoint: string) =>
         fetchAPI<T>(endpoint, { method: 'DELETE' }),
 };
 
@@ -156,15 +158,7 @@ interface Turno {
     numeroSemana: number;
 }
 
-interface AsignacionTurno {
-    id: number;
-    conductorId: number;
-    turnoId: number;
-    fechaAsignacion: string;
-    horaInicio?: string;
-    horaFin?: string;
-    estado: 'PENDIENTE' | 'EN_PROGRESO' | 'COMPLETADA' | 'CANCELADA';
-}
+
 
 // ========================================
 // API DE AUTENTICACIÓN
@@ -251,6 +245,38 @@ export const turnosAPI = {
         api.post('/api/turnos', data),
 
     /**
+     * ⭐ NUEVO: Previsualizar turnos automáticos sin crearlos
+     */
+    previsualizarAuto: (
+        rutaId: number,
+        horaInicio: string,
+        horaFin: string,
+        numeroSemana: number
+    ): Promise<{
+        rutaNombre: string;
+        horaInicio: string;
+        horaFin: string;
+        turnosPorDia: number;
+        totalTurnos: number;
+        turnosMuestra: Array<{
+            horaInicio: string;
+            horaFin: string;
+            duracionHoras: number;
+        }>;
+        minutosRestantes?: number;
+        horasRestantes?: number;
+        advertencia?: string;
+    }> => {
+        const params = new URLSearchParams({
+            rutaId: rutaId.toString(),
+            horaInicio,
+            horaFin,
+            numeroSemana: numeroSemana.toString(),
+        });
+        return api.get(`/api/turnos/previsualizar?${params}`);
+    },
+
+    /**
      * Crea turnos automáticamente para toda la semana
      */
     createAuto: (
@@ -258,7 +284,12 @@ export const turnosAPI = {
         horaInicio: string,
         horaFin: string,
         numeroSemana: number
-    ): Promise<Turno[]> => {
+    ): Promise<{
+        mensaje: string;
+        totalTurnos: number;
+        turnosPorDia: number;
+        turnos: Turno[];
+    }> => {
         const params = new URLSearchParams({
             rutaId: rutaId.toString(),
             horaInicio,
@@ -287,7 +318,8 @@ export const asignacionesAPI = {
     create: (data: {
         conductorId: number;
         turnoId: number;
-        fechaAsignacion: string;
+        fechaInicio: string;  // ⭐ Cambiar nombre
+        estado: string;  // ⭐ Agregar estado
     }): Promise<AsignacionTurno> => api.post('/api/asignaciones', data),
 
     /**
@@ -309,3 +341,6 @@ export const asignacionesAPI = {
         api.delete(`/api/asignaciones/${id}`),
 };
 
+// ========================================
+// EXPORTACIÓN POR DEFECTO
+// ========================================

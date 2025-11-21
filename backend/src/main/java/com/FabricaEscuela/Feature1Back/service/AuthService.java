@@ -64,10 +64,21 @@ public class AuthService {
         codigoVerificacionRepository.save(codigoVerificacion);
 
         // Enviar email
-        emailService.enviarCodigoVerificacion(correo, codigo);
+        try {
+            emailService.enviarCodigoVerificacion(correo, codigo);
+            System.out.println("📧 Código enviado por email a: " + correo);
+        } catch (Exception e) {
+            System.err.println("⚠️ Error al enviar email, mostrando en consola:");
+            System.out.println("====================================");
+            System.out.println("CÓDIGO DE VERIFICACIÓN: " + codigo);
+            System.out.println("PARA: " + correo);
+            System.out.println("====================================");
+        }
 
         return "Código de verificación enviado al correo " + correo;
     }
+
+
     @Transactional
     public String loginConCedula(String cedula, String password) {
         // Buscar usuario por cédula

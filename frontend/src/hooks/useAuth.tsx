@@ -17,7 +17,7 @@ import {
 // TIPOS
 // ========================================
 
-export type UserRole = 'admin' | 'driver' | null;
+export type UserRole = 'admin' | 'driver' | 'CONDUCTOR' | null;
 
 interface User {
   id: string;

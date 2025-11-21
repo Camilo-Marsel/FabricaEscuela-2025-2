@@ -38,6 +38,8 @@ public interface AsignacionTurnoRepository extends JpaRepository<AsignacionTurno
     // Buscar todas las asignaciones EN_CURSO (turnos activos ahora)
     List<AsignacionTurno> findByEstado(EstadoAsignacion estado);
 
+    Optional<AsignacionTurno> findByConductorAndFechaInicio(Conductor conductor, LocalDate fechaInicio);
+
     // Verificar si un conductor tiene un turno asignado en una fecha específica
     @Query("SELECT COUNT(a) > 0 FROM AsignacionTurno a WHERE a.conductor = :conductor " +
             "AND a.fechaInicio <= :fecha " +

@@ -139,6 +139,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
+
           <Card className="border-border">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -148,19 +149,19 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-muted-foreground">
-                Asigna y gestiona los turnos de trabajo de conductores en rutas.
+                Crea plantillas de turnos y asigna conductores a las rutas.
               </p>
-              <div className="flex flex-col sm:flex-row gap-2">
+              <div className="flex flex-col gap-2">
                 <Button asChild className="bg-primary hover:bg-primary-hover">
                   <Link to="/turnos">
                     <Clock className="h-4 w-4 mr-2" />
-                    Ver Turnos
+                    Ver Plantillas de Turnos
                   </Link>
                 </Button>
-                <Button variant="outline" asChild>
-                  <Link to="/turnos">
-                    <Plus className="h-4 w-4 mr-2" />
-                    + Asignar Turno
+                <Button asChild variant="outline">
+                  <Link to="/asignaciones">
+                    <Users className="h-4 w-4 mr-2" />
+                    Asignar Conductores
                   </Link>
                 </Button>
               </div>

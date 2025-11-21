@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -25,7 +26,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    @Order(1) // ⬅️ IMPORTANTE: Esto fuerza la prioridad
+    @Order(1)
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
@@ -34,21 +35,43 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        // H2 Console
+                        // ============================================
+                        // RUTAS PÚBLICAS
+                        // ============================================
                         .requestMatchers("/h2-console/**").permitAll()
-
-                        // Auth endpoints públicos
                         .requestMatchers("/api/auth/**", "/health").permitAll()
-
-                        // TODOS los endpoints de API requieren autenticación
-                        .requestMatchers("/api/**").authenticated()
-
-                        // Archivos estáticos
                         .requestMatchers("/", "/index.html", "/dashboard.html", "/admin-dashboard.html").permitAll()
                         .requestMatchers("/*.html").permitAll()
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/static/**").permitAll()
 
-                        // Resto
+
+                        // ============================================
+                        // RUTAS PROTEGIDAS POR ROL
+                        // ============================================
+
+                        // TURNOS - Solo ADMIN puede crear/modificar/eliminar
+                        .requestMatchers(HttpMethod.GET, "/api/turnos/**").hasAnyRole("ADMIN", "CONDUCTOR")
+                        .requestMatchers(HttpMethod.POST, "/api/turnos/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/turnos/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/turnos/**").hasRole("ADMIN")
+
+                        // ASIGNACIONES - Solo ADMIN puede gestionar
+                        .requestMatchers(HttpMethod.GET, "/api/asignaciones/**").hasAnyRole("ADMIN", "CONDUCTOR")
+                        .requestMatchers(HttpMethod.POST, "/api/asignaciones/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/asignaciones/**").hasAnyRole("ADMIN", "CONDUCTOR")
+                        .requestMatchers(HttpMethod.DELETE, "/api/asignaciones/**").hasRole("ADMIN")
+
+                        // CONDUCTORES - Solo ADMIN
+                        .requestMatchers("/api/conductores/me").hasAnyRole("CONDUCTOR", "ADMIN")
+                        .requestMatchers("/api/conductores/**").hasRole("ADMIN")
+
+                        // RUTAS - Solo ADMIN
+                        .requestMatchers("/api/rutas/**").hasRole("ADMIN")
+
+                        // ============================================
+                        // FALLBACK - Cualquier otra ruta requiere autenticación
+                        // ============================================
+                        .requestMatchers("/api/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .headers(headers -> headers.frameOptions(frame -> frame.disable()))

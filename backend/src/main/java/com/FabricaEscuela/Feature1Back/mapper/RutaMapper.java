@@ -20,15 +20,21 @@ public class RutaMapper {
         return ruta;
     }
 //de prueba
-    public RutaDTO toDTO(Ruta ruta) {
-        if (ruta == null) return null;
-        RutaDTO dto = new RutaDTO();
-        dto.setId(ruta.getId());
-        dto.setNombre(ruta.getNombre());
-        dto.setOrigen(ruta.getOrigen());
-        dto.setDestino(ruta.getDestino());
-        dto.setDuracionEnMinutos(ruta.getDuracionEnMinutos());
-        return dto;
+public RutaDTO toDTO(Ruta ruta) {
+    if (ruta == null) return null;
+
+    RutaDTO dto = new RutaDTO();
+    dto.setId(ruta.getId());
+    dto.setNombre(ruta.getNombre());
+    dto.setOrigen(ruta.getOrigen());
+    dto.setDestino(ruta.getDestino());
+    dto.setDuracionEnMinutos(ruta.getDuracionEnMinutos());
+
+    // ⭐ Opcional: Agregar código y descripción generados
+    dto.setCodigo(String.format("R%03d", ruta.getId()));
+    dto.setDescription(ruta.getOrigen() + " - " + ruta.getDestino());
+
+    return dto;
     }
 
     public List<RutaDTO> toDTOList(List<Ruta> rutas) {
